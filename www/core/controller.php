@@ -34,7 +34,7 @@ abstract class controller extends base
             exit;
         }
         if(isset($_POST['login_btn'])) {
-            if($this->auth($_POST['email'], md5($_POST['password']), $_POST['remember'])) {
+            if($this->auth($_POST['user_name'], md5($_POST['user_password']), $_POST['remember'])) {
                 header('Location: ' . SITE_DIR);
                 exit;
             } else {
@@ -47,9 +47,6 @@ abstract class controller extends base
         if(PROJECT != 'frontend' && !$this->check_auth and !in_array($controller, array('common_controller', 'index_controller'))) {
             header('Location: ' . SITE_DIR);
             exit;
-        }
-        if(PROJECT == 'frontend' && $controller == 'common_controller') {
-            //$this->check_client_auth();
         }
         if($this->check_auth)
         {
@@ -118,7 +115,8 @@ abstract class controller extends base
             $this->render('template', $template_file);
         }
 
-        if($this->sidebar !== false && PROJECT == 'frontend') {
+        if($this->sidebar !== false) {
+            $this->render('sidebar', TEMPLATE_DIR . 'common' . DS . 'sidebar.php');
 //            require_once(!$this->header ? TEMPLATE_DIR . 'common' . DS . 'sidebar.php' : TEMPLATE_DIR . 'common' . DS .$this->sidebar() . '.php');
         }
 
@@ -169,39 +167,34 @@ abstract class controller extends base
      */
     protected function checkAuth()
     {
-        $this->user = array(
-            'id' => 1
-        );
-        return true;
-//        $this->user = $this->model('users')->getById(1);
-//        if($_SESSION['auth']) {
-//            if($user = $this->model('backend_users')->getByFields(array(
-//                'id' => $_SESSION['user']['id'],
-//                'email' => $_SESSION['user']['email'],
-//                'user_password' => $_SESSION['user']['user_password']
-//            ))
-//            ) {
-//                registry::set('auth', true);
-//                registry::set('user', $user);
-//                return true;
-//            } else {
-//                return false;
-//            }
-//        } elseif($_COOKIE['auth']) {
-//            if($user = $this->model('backend_users')->getByFields(array(
-//                'id' => $_COOKIE['id'],
-//                'email' => $_COOKIE['email'],
-//                'user_password' => $_COOKIE['user_password']
-//            ),0,'','',0)) {
-//                registry::set('auth', true);
-//                registry::set('user', $user);
-//                return true;
-//            } else {
-//                return false;
-//            }
-//        } else {
-//            return false;
-//        }
+        if($_SESSION['auth']) {
+            if($user = $this->model('system_users')->getByFields(array(
+                'id' => $_SESSION['user']['id'],
+                'user_name' => $_SESSION['user']['user_name'],
+                'user_password' => $_SESSION['user']['user_password']
+            ))
+            ) {
+                registry::set('auth', true);
+                registry::set('user', $user);
+                return true;
+            } else {
+                return false;
+            }
+        } elseif($_COOKIE['auth']) {
+            if($user = $this->model('system_users')->getByFields(array(
+                'id' => $_COOKIE['id'],
+                'user_name' => $_COOKIE['user_name'],
+                'user_password' => $_COOKIE['user_password']
+            ),0,'','',0)) {
+                registry::set('auth', true);
+                registry::set('user', $user);
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -214,18 +207,18 @@ abstract class controller extends base
     protected function auth($email, $password, $remember = false)
     {
         if(!$password) return false;
-        if($user = $this->model('backend_users')->getByFields(array(
-            'email' => $email,
+        if($user = $this->model('system_users')->getByFields(array(
+            'user_name' => $email,
             'user_password' => $password
         ))) {
             if(!$remember) {
                 $_SESSION['user']['id'] = $user['id'];
-                $_SESSION['user']['email'] = $user['email'];
+                $_SESSION['user']['user_name'] = $user['user_name'];
                 $_SESSION['user']['user_password'] = $user['user_password'];
                 $_SESSION['auth'] = 1;
             } else {
                 setcookie('id', $user['id'], time() + 3600 * 24 * 90);
-                setcookie('email', $user['email'], time() + 3600 * 24 * 90);
+                setcookie('user_name', $user['user_name'], time() + 3600 * 24 * 90);
                 setcookie('user_password', $user['user_password'], time() + 3600 * 24 * 90);
                 setcookie('auth', 1, time() + 3600 * 24 * 90);
             }
@@ -244,7 +237,7 @@ abstract class controller extends base
         unset($_SESSION['user']);
         unset($_SESSION['auth']);
         setcookie('id', '', time() - 3600);
-        setcookie('email', '', time() - 3600);
+        setcookie('user_name', '', time() - 3600);
         setcookie('user_password', '', time() - 3600);
         setcookie('auth', '', time() - 3600);
     }

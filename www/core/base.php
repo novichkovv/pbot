@@ -93,7 +93,7 @@ class base
     public function api()
     {
         if(!$this->api_instance) {
-            $this->api_instance = new feedly_api_class(registry::get('user')['id']);
+            $this->api_instance = new api_class();
         }
         return $this->api_instance;
     }
