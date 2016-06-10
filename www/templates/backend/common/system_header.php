@@ -28,6 +28,8 @@
     <link href="<?php echo SITE_DIR; ?>assets/admin/pages/css/tasks.css" rel="stylesheet" type="text/css"/>
     <!-- END PAGE STYLES -->
     <!-- BEGIN THEME STYLES -->
+    <link href="<?php echo SITE_DIR; ?>assets/global/plugins/bootstrap-toastr/toastr.min.css" rel="stylesheet" type="text/css"/>
+
     <link href="<?php echo SITE_DIR; ?>assets/global/css/components.min.css" rel="stylesheet" type="text/css"/>
     <link href="<?php echo SITE_DIR; ?>assets/global/css/plugins.min.css" rel="stylesheet" type="text/css"/>
     <link href="<?php echo SITE_DIR; ?>assets/global/plugins/bootstrap-datepicker/css/datepicker3.css" rel="stylesheet" type="text/css">
@@ -83,6 +85,7 @@
     <script src="<?php echo SITE_DIR; ?>assets/admin/layout/scripts/quick-sidebar.js" type="text/javascript"></script>
     <script src="<?php echo SITE_DIR; ?>assets/admin/pages/scripts/index.js" type="text/javascript"></script>
     <script src="<?php echo SITE_DIR; ?>assets/admin/pages/scripts/tasks.js" type="text/javascript"></script>
+    <script src="<?php echo SITE_DIR; ?>assets/global/plugins/bootstrap-toastr/toastr.min.js" type="text/javascript"></script>
     <script src="<?php echo SITE_DIR; ?>js/script.js" type="text/javascript"></script>
     <!-- END PAGE LEVEL SCRIPTS -->
 

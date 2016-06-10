@@ -1,6 +1,6 @@
 <div class="page-sidebar-wrapper">
     <div class="page-sidebar navbar-collapse collapse">
-        <ul class="page-sidebar-menu" data-auto-scroll="true" data-slide-speed="200">
+        <ul class="page-sidebar-menu page-sidebar-menu-closed" data-auto-scroll="true" data-slide-speed="200">
             <li class="start <?php if(registry::get('route_parts')[0] == 'index') echo 'active'; ?>">
                 <a href="<?php echo SITE_DIR; ?>">
                     <i class="icon-home"></i>
