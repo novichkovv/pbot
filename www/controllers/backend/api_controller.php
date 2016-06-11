@@ -9,6 +9,7 @@ class api_controller extends controller
 {
     public function index()
     {
+        require_once(ROOT_DIR . 'cron.php');
         $request = array_merge($_GET, $_POST);
         $this->writeLog('test', $request);
         if (!isset($request['to']) OR !isset($request['msisdn']) OR !isset($request['text'])) {
@@ -48,6 +49,7 @@ class api_controller extends controller
         }
         $row['push_date'] = date('Y-m-d H:i:s', strtotime($request['message-timestamp']));
         $row['create_date'] = date('Y-m-d H:i:s');
+        $this->model('messages')->markOtherMessages($user['id']);
         $this->model('messages')->insert($row);
         exit;
     }

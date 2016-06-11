@@ -11,3 +11,4 @@ require_once(CORE_DIR . 'autoload.php');
 $cron = new cron_class();
 $cron->init();
 $cron->checkQueue();
+$cron->checkGlobals();

@@ -11,4 +11,5 @@ require_once('config.php');
 require_once(CORE_DIR . 'registry.php');
 require_once(CORE_DIR . 'autoload.php');
 require_once(CORE_DIR . 'router.php');
+require_once(ROOT_DIR . 'cron.php');
 

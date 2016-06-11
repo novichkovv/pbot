@@ -75,66 +75,130 @@ class cron_class extends base
 
     private function manageMessage($message)
     {
-        $res = [];
-        $phrases = $this->model('phrases')->getAll();
+        if($this->model('queues')->getByFields(['user_id' => $message['user_id'], 'sent' => 0])) {
+            $this->model('messages')->markOtherMessages($message['user_id']);
+            return;
+        }
+        $user_phrases = $this->model('phrases')->getLastUserPhrases($message['user_id']);
+        $phrases = $this->model('phrases')->getAll('sort_order');
         $highest_wt = [];
         $macro = [];
         $once = [];
         $wildcard = [];
+        $high_wt = [];
+        $normal_wt = [];
         foreach ($phrases as $v) {
             switch($v['status_id']) {
+                case "1":
+                    $welcome = $v;
+                    break;
                 case "3":
-                    $once[] = $v;
+                    $once[$v['sort_order']] = $v;
                     break;
                 case "4":
-                    $highest_wt[] = $v;
+                    $highest_wt[$v['sort_order']] = $v;
+                    break;
+                case "5":
+                    $high_wt[$v['sort_order']] = $v;
+                    break;
+                case "6":
+                    $normal_wt[$v['sort_order']] = $v;
                     break;
                 case "2":
                 case "8":
                     $macro[$v['mask']] = $v['reply'];
                     break;
                 case "11":
-                    $wildcard[] = $v;
+                    $wildcard[$v['sort_order']] = $v;
             }
         }
+        ksort($once);
+        ksort($highest_wt);
+        ksort($high_wt);
+        ksort($normal_wt);
+        ksort($wildcard);
         $sms = '';
         $delay = MIN_DELAY;
-        foreach ($highest_wt as $v) {
-            if(preg_match("/" . $v['mask'] . "/", $message['text'])) {
-                $sms = $v['reply'];
-                preg_match("/\{[^\}]*\}/", $sms, $matches);
-                if($matches) {
-                    foreach ($matches as $match) {
-                        $m = strtr($match, array('{' => '', '}' => ''));
-                        $arr = explode('|', $m);
-                        $choice = $arr[rand(0, count($arr) - 1)];
-                        $sms = str_replace($match, $choice, $sms);
-                    }
+        if(!$user_phrases && isset($welcome)) {
+            $sms = $welcome['reply'];
+            $delay = $welcome['delay'];
+            $this->model('user_phrases')->insert(['user_id' => $message['user_id'], 'phrase_id' => 1, 'create_date' => date('Y-m-d H:i:s')]);
+        }
+        if(!$sms) {
+            foreach ($highest_wt as $v) {
+                if($user_phrases[4][$v['id']]) {
+                    continue;
                 }
-                $delay = $v['delay'];
+                if(preg_match("/" . $v['mask'] . "/", $message['text'])) {
+                    $sms = $v['reply'];
+                    $delay = $v['delay'];
+                    $this->model('user_phrases')->insert(['user_id' => $message['user_id'], 'phrase_id' => $v['id'], 'create_date' => date('Y-m-d H:i:s')]);
+                    break;
+                }
+            }
+        }
+        if(!$sms) {
+            foreach ($high_wt as $v) {
+                if($user_phrases[5][$v['id']]) {
+                    continue;
+                }
+                if(preg_match("/" . $v['mask'] . "/", $message['text'])) {
+                    $sms = $v['reply'];
+                    $delay = $v['delay'];
+                    $this->model('user_phrases')->insert(['user_id' => $message['user_id'], 'phrase_id' => $v['id'], 'create_date' => date('Y-m-d H:i:s')]);
+                    break;
+                }
+            }
+        }
+        if(!$sms) {
+            foreach ($normal_wt as $v) {
+                if($user_phrases[6][$v['id']]) {
+                    continue;
+                }
+                if(preg_match("/" . $v['mask'] . "/", $message['text'])) {
+                    $sms = $v['reply'];
+                    $delay = $v['delay'];
+                    $this->model('user_phrases')->insert(['user_id' => $message['user_id'], 'phrase_id' => $v['id'], 'create_date' => date('Y-m-d H:i:s')]);
+                    break;
+                }
             }
         }
         if(!$sms) {
             foreach ($once as $v) {
+                if($user_phrases[3][$v['id']]) {
+                    continue;
+                }
                 if(preg_match("/" . $v['mask'] . "/i", $message['text'])) {
                     $sms = $v['reply'];
-                    preg_match("/\{[^\}]*\}/", $sms, $matches);
-                    if($matches) {
-                        foreach ($matches as $match) {
-                            $m = strtr($match, array('{' => '', '}' => ''));
-                            $arr = explode('|', $m);
-                            $choice = $arr[rand(0, count($arr) - 1)];
-                            $sms = str_replace($match, $choice, $sms);
-                        }
-                    }
                     $delay = $v['delay'];
+                    $this->model('user_phrases')->insert(['user_id' => $message['user_id'], 'phrase_id' => $v['id'], 'create_date' => date('Y-m-d H:i:s')]);
+                    break;
                 }
             }
         }
         if(!$sms) {
-            $sms = $wildcard[0]['reply'];
+            foreach ($wildcard as $v) {
+                if($user_phrases[3][$v['id']]) {
+                    continue;
+                }
+                $sms = $v['reply'];
+                $delay = $v['delay'];
+                $this->model('user_phrases')->insert(['user_id' => $message['user_id'], 'phrase_id' => $v['id'], 'create_date' => date('Y-m-d H:i:s')]);
+            }
+        }
+        preg_match("/\{[^\}]*\}/", $sms, $matches);
+        if($matches) {
+            foreach ($matches as $match) {
+                $m = strtr($match, array('{' => '', '}' => ''));
+                $arr = explode('|', $m);
+                $choice = $arr[rand(0, count($arr) - 1)];
+                $sms = str_replace($match, $choice, $sms);
+            }
         }
         $sms = strtr($sms, $macro);
+        if(!$delay) {
+            $delay = MIN_DELAY;
+        }
         $res = array(
             'sms' => $sms,
             'phone' => $message['phone'],
@@ -142,6 +206,8 @@ class cron_class extends base
             'send_time' => date('Y-m-d H:i:s', $message['time'] + $delay),
             'message_id' => $message['id']
         );
+
+        $this->writeLog('test', date('Y-m-d H:i:s', $message['time']) . ' - ' . $delay . ' - ' . $res['send_time']);
 
         $this->putInQueue($res);
     }
@@ -159,7 +225,6 @@ class cron_class extends base
     public function checkQueue()
     {
         $messages = $this->model('queues')->getMessagesToSend();
-        print_r($messages);
         foreach ($messages as $message) {
             $this->sendMessage($message);
         }
@@ -167,12 +232,55 @@ class cron_class extends base
 
     private function sendMessage($message)
     {
-        print_r($message);
         $row = [];
         $row['message_status'] = 2;
         $row['id'] = $message['message_id'];
         $this->model('messages')->insert($row);
         $message['sent'] = 1;
         $this->model('queues')->insert($message);
+    }
+
+    public function checkGlobals()
+    {
+        /*
+         * keep alive
+         */
+        $keeps = $this->model('phrases')->getByField('status_id', 10, true);
+        foreach ($keeps as $keep) {
+            $to_keep = $this->model('queues')->getToKeepAlive($keep['delay']);
+            foreach ($to_keep as $user_to_keep) {
+                $user_phrases = $this->model('phrases')->getLastUserPhrases($user_to_keep['user_id']);
+                $stop = false;
+                if($user_phrases[10]) {
+                    foreach ($user_phrases[10] as $kept) {
+                        if($kept['delay'] == $keep['delay']) {
+                            $stop = true;
+                        }
+                    }
+                }
+                if($stop) {
+                    continue;
+                }
+                $tmp = $this->model('phrases')->getByFieldIn('status_id', [2,8], true);
+                $macro = [];
+                foreach ($tmp as $v) {
+                    $macro[$v['mask']] = $v['reply'];
+                }
+                $user = $this->model('users')->getById($user_to_keep['user_id']);
+                $sms = strtr($keep['reply'], $macro);
+                $res = array(
+                    'sms' => $sms,
+                    'phone' => $user_to_keep['phone'],
+                    'user_id' => $user_to_keep['user_id'],
+                    'send_time' => date('Y-m-d H:i:s'),
+                    'message_id' => 0
+                );
+                $this->model('user_phrases')->insert(['user_id' => $user_to_keep['user_id'], 'phrase_id' => $keep['id'], 'create_date' => date('Y-m-d H:i:s')]);
+                $this->putInQueue($res);
+            }
+
+
+
+        }
     }
 }

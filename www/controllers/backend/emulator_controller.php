@@ -17,22 +17,11 @@ class emulator_controller extends controller
     public function index_ajax()
     {
         switch ($_REQUEST['action']) {
-            case "send_message":
-                $params = $_POST['message'];
-                $url = '/api/?' . http_build_query($params);
-                $ch = curl_init();
-                curl_setopt ($ch, CURLOPT_URL, $url);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                $result = curl_exec ($ch);
-                curl_close($ch);
-                var_dump($result);
-                exit;
-                break;
-
             case "update_messages":
                 $this->getMessages();
                 $template = $this->fetch('index' . DS . 'ajax' . DS . 'chats');
                 echo json_encode(array('status' => 1, 'template' => $template, 'time' => date('Y-m-d H:i:s')));
+                require_once(ROOT_DIR . 'cron.php');
                 exit;
                 break;
         }

@@ -32,7 +32,7 @@
             </div>
             <div class="form-group hidden">
                 <label>Timestamp</label>
-                <input type="text" name="message-timestamp" value="<?php echo date('Y-m-d H:i:s'); ?>" class="form-control">
+                <input type="text" id="timestamp" name="message-timestamp" value="<?php echo date('Y-m-d H:i:s'); ?>" class="form-control">
             </div>
             <div class="portlet light bordered">
                 <div class="portlet-title">
@@ -56,7 +56,7 @@
                     </div>
                 </div>
                 <div class="portlet-body" id="chats">
-                    <div class="scroller" style="height: 400px;" data-always-visible="1" data-rail-visible1="1">
+                    <div class="scroll" style="height: 400px; overflow: auto;" data-always-visible="1" data-rail-visible1="1">
                         <?php require_once(TEMPLATE_DIR . 'index' . DS . 'ajax' . DS . 'chats.php'); ?>
                     </div>
                 </div>
@@ -72,8 +72,27 @@
 <script type="text/javascript">
     $ = jQuery.noConflict();
     $(document).ready(function () {
+        if($('.message').length) {
+            $(".scroll").scrollTop($('.message').last().offset().top);
+        }
+//        console.log($('#chats').last().offset().top);
         $('#user_id').change(function() {
-            $(this).closest('form').submit();
+            var user_id = $("#user_id").val();
+            var params = {
+                'action': 'update_messages',
+                'values': {user_id: user_id},
+                'callback': function (msg) {
+                    ajax_respond(msg,
+                        function (respond) { //success
+                            $(".scroll").html(respond.template);
+                            $('#timestamp').val(respond.time);
+                        },
+                        function (respond) { //fail
+                        }
+                    );
+                }
+            };
+            ajax(params);
         });
         setInterval(function() {
             var user_id = $("#user_id").val();
@@ -83,7 +102,9 @@
                 'callback': function (msg) {
                     ajax_respond(msg,
                         function (respond) { //success
-                            $(".scroller").html(respond.template);
+                            $(".scroll").html(respond.template);
+//                            /console.log($('#timestamp'));
+                            $('#timestamp').val(respond.time);
                         },
                         function (respond) { //fail
                         }
@@ -91,7 +112,7 @@
                 }
             };
             ajax(params);
-        }, 15000);
+        }, 5000);
         $("#form").submit(function(e) {
             e.preventDefault();
             var message = get_from_form('#form');
@@ -129,8 +150,11 @@
                                 'callback': function (msg) {
                                     ajax_respond(msg,
                                         function (respond) { //success
-                                            $(".scroller").html(respond.template);
+                                            $(".scroll").html(respond.template);
                                             $('[name="message-timestamp"]').val(respond.time);
+                                            if($('.message').length) {
+                                                $(".scroll").scrollTop($('.message').last().offset().top);
+                                            }
                                         },
                                         function (respond) { //fail
                                         }
@@ -138,7 +162,7 @@
                                 }
                             };
                             ajax(params);
-                            toastr.success('sent');
+//                            toastr.success('sent');
                             $('[name="text"]').val('');
                         }
                     };
@@ -162,8 +186,11 @@
                             'callback': function (msg) {
                                 ajax_respond(msg,
                                     function (respond) { //success
-                                        $(".scroller").html(respond.template);
+                                        $(".scroll").html(respond.template);
                                         $('[name="message-timestamp"]').val(respond.time);
+                                        if($('.message').length) {
+                                            $(".scroll").scrollTop($('.message').last().offset().top);
+                                        }
                                     },
                                     function (respond) { //fail
                                     }
@@ -171,7 +198,7 @@
                             }
                         };
                         ajax(params);
-                        toastr.success('sent');
+//                        toastr.success('sent');
                         $('[name="text"]').val('');
 
                     }
