@@ -22,6 +22,7 @@ class db_connect_singleton
         $this->pdo->setAttribute(PDO::ATTR_ORACLE_NULLS ,PDO::NULL_TO_STRING);
         $this->pdo->exec("SET sql_mode = ''");
         $this->pdo->exec("SET NAMES utf8");
+        $this->pdo->exec('SET time_zone = "+00:00";');
     }
 
     public static function getInstance($db, $db_host = null, $db_user = null, $db_password = null)
