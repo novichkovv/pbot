@@ -174,6 +174,7 @@ abstract class controller extends base
                 'user_password' => $_SESSION['user']['user_password']
             ))
             ) {
+                $this->writeLog('test', $user);
                 registry::set('auth', true);
                 registry::set('user', $user);
                 return true;
