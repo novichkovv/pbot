@@ -47,8 +47,9 @@ class api_class extends base
     {
         $params['api_key'] = API_KEY;
         $params['api_secret'] = API_SECRET;
-        $params['from'] = API_SENDER;
+//        $params['from'] = API_SENDER;
         $url .= '?' . http_build_query($params);
+        $this->writeLog('test', $url);
 //        $headers = array(
 //            "User-Agent: php-tutorial/1.0",
 //            "Authorization: Bearer " . $this->access_token,
