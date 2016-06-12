@@ -9,8 +9,17 @@ class emulator_controller extends controller
 {
     public function index()
     {
+        $this->render('breadcrumbs', array(
+            array('name' => 'Home', 'route' => SITE_DIR),
+            array('name' => 'Messenger')
+        ));
         $this->render('users', $this->model('users')->getAll());
-        $this->getMessages();
+        $user = $this->model('users')->getById(1);
+        if($_GET['user_id']) {
+            $user = $this->model('users')->getById($_GET['user_id']);
+        }
+        $this->getMessages($user);
+        $this->render('user', $user);
         $this->view('index' . DS . 'emulator');
     }
 
@@ -18,7 +27,11 @@ class emulator_controller extends controller
     {
         switch ($_REQUEST['action']) {
             case "update_messages":
-                $this->getMessages();
+                $user = $this->model('users')->getById(1);
+                if($_POST['user_id']) {
+                    $user = $this->model('users')->getById($_POST['user_id']);
+                }
+                $this->getMessages($user);
                 $template = $this->fetch('index' . DS . 'ajax' . DS . 'chats');
                 echo json_encode(array('status' => 1, 'template' => $template, 'time' => date('Y-m-d H:i:s')));
                 require_once(ROOT_DIR . 'cron.php');
@@ -27,12 +40,8 @@ class emulator_controller extends controller
         }
     }
 
-    private function getMessages()
+    private function getMessages($user)
     {
-        $user = $this->model('users')->getById(1);
-        if($_POST['user_id']) {
-            $user = $this->model('users')->getById($_POST['user_id']);
-        }
         $tmp = $this->model('messages')->getByField('user_id', $user['id'], true, 'push_date DESC', 12);
         $outcoming = $this->model('queues')->getByFields(array('user_id' => $user['id'], 'sent' => 1), true, 'send_time DESC', 6);
         $messages = [];

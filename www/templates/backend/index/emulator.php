@@ -1,51 +1,74 @@
-<form method="post" action="" id="form">
-    <div class="row">
-        <div class="col-md-6">
-            <div class="form-group hidden">
-                <label>Type</label>
-                <select class="form-control" name="type">
-                    <option value="text">Text</option>
-                    <option value="unicode">Unicode</option>
-                    <option value="binary">Binary</option>
-                </select>
+<br>
+<div class="row">
+    <div class="col-md-6">
+        <div class="portlet light bordered">
+            <div class="portlet-title">
+                <div class="caption font-dark">
+                    <i class="fa fa-envelope font-dark"></i>
+                    <span class="caption-subject bold uppercase"> Message</span>
+                </div>
+                <div class="actions">
+<!--                    <div class="btn-group btn-group-devided">-->
+<!--                        <button class="btn green btn-outline btn-circle" type="button" id="add_phrase">-->
+<!--                            <i class="fa fa-plus"></i>-->
+<!--                        </button>-->
+<!--                        <a class="btn red btn-outline btn-circle delete_phrases" href="#delete_modal" data-toggle="modal">-->
+<!--                            <i class="fa fa-trash-o"></i>-->
+<!--                        </a>-->
+<!--                    </div>-->
+                </div>
             </div>
-            <div class="form-group">
-                <label>Phone</label>
-                <input type="text" name="msisdn" class="form-control" value="1234567">
-            </div>
-            <div class="form-group">
-                <label>Text</label>
-                <textarea rows="5" name="text" class="form-control"></textarea>
-            </div>
-            <div class="form-group">
-                <input type="submit" class="btn btn-info" name="send">
+            <div class="portlet-body">
+                <form method="post" action="" id="form">
+                    <div class="form-group hidden">
+                        <label>Type</label>
+                        <select class="form-control" name="type">
+                            <option value="text">Text</option>
+                            <option value="unicode">Unicode</option>
+                            <option value="binary">Binary</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="text" name="msisdn" class="form-control" value="<?php echo $user['phone']; ?>">
+                    </div>
+                    <div class="form-group">
+                        <label>Text</label>
+                        <textarea rows="5" name="text" class="form-control"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <input type="submit" class="btn btn-info" name="send">
+                    </div>
+                    <div class="form-group hidden ">
+                        <label>To</label>
+                        <input type="text" name="to" value="79263335708" class="form-control">
+                    </div>
+                    <div class="form-group hidden">
+                        <label>Message Id</label>
+                        <input type="text" name="messageId" value="<?php echo (time() - 37488); ?>" class="form-control">
+                    </div>
+                    <div class="form-group hidden">
+                        <label>Timestamp</label>
+                        <input type="text" id="timestamp" name="message-timestamp" value="<?php echo date('Y-m-d H:i:s'); ?>" class="form-control">
+                    </div>
+                </form>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="form-group hidden ">
-                <label>To</label>
-                <input type="text" name="to" value="79263335708" class="form-control">
-            </div>
-            <div class="form-group hidden">
-                <label>Message Id</label>
-                <input type="text" name="messageId" value="<?php echo (time() - 37488); ?>" class="form-control">
-            </div>
-            <div class="form-group hidden">
-                <label>Timestamp</label>
-                <input type="text" id="timestamp" name="message-timestamp" value="<?php echo date('Y-m-d H:i:s'); ?>" class="form-control">
-            </div>
-            <div class="portlet light bordered">
-                <div class="portlet-title">
-                    <div class="caption font-dark">
-                        <i class="icon-list font-dark"></i>
-                        <span class="caption-subject bold uppercase"> Chat</span>
-                    </div>
-                    <div class="actions">
+    </div>
+    <div class="col-md-6">
+        <div class="portlet light bordered">
+            <div class="portlet-title">
+                <div class="caption font-dark">
+                    <i class="icon-bubbles font-dark"></i>
+                    <span class="caption-subject bold uppercase"> Chat</span>
+                </div>
+                <div class="actions">
+                    <form>
                         <select id="user_id" class="form-control" name="user_id">
                             <?php if ($users): ?>
                                 <?php foreach ($users as $user): ?>
                                     <option value="<?php echo $user['id']; ?>"
-                                        <?php if ($user['id'] == $_POST['user_id']): ?>
+                                        <?php if ($user['id'] == $_GET['user_id']): ?>
                                             selected
                                         <?php endif; ?>>
                                         <?php echo $user['phone']; ?>
@@ -53,22 +76,22 @@
                                 <?php endforeach; ?>
                             <?php endif; ?>
                         </select>
-                    </div>
+                    </form>
                 </div>
-                <div class="portlet-body" id="chats">
-                    <div class="scroll" style="height: 400px; overflow: auto;" data-always-visible="1" data-rail-visible1="1">
-                        <?php require_once(TEMPLATE_DIR . 'index' . DS . 'ajax' . DS . 'chats.php'); ?>
-                    </div>
+            </div>
+            <div class="portlet-body" id="chats">
+                <div class="scroll" style="height: 400px; overflow: auto;" data-always-visible="1" data-rail-visible1="1">
+                    <?php require_once(TEMPLATE_DIR . 'index' . DS . 'ajax' . DS . 'chats.php'); ?>
                 </div>
             </div>
         </div>
     </div>
+</div>
     <div class="row">
         <div class="col-md-6">
 
         </div>
     </div>
-</form>
 <script type="text/javascript">
     $ = jQuery.noConflict();
     $(document).ready(function () {
@@ -77,22 +100,23 @@
         }
 //        console.log($('#chats').last().offset().top);
         $('#user_id').change(function() {
-            var user_id = $("#user_id").val();
-            var params = {
-                'action': 'update_messages',
-                'values': {user_id: user_id},
-                'callback': function (msg) {
-                    ajax_respond(msg,
-                        function (respond) { //success
-                            $(".scroll").html(respond.template);
-                            $('#timestamp').val(respond.time);
-                        },
-                        function (respond) { //fail
-                        }
-                    );
-                }
-            };
-            ajax(params);
+            $(this).closest('form').submit();
+//            var user_id = $("#user_id").val();
+//            var params = {
+//                'action': 'update_messages',
+//                'values': {user_id: user_id},
+//                'callback': function (msg) {
+//                    ajax_respond(msg,
+//                        function (respond) { //success
+//                            $(".scroll").html(respond.template);
+//                            $('#timestamp').val(respond.time);
+//                        },
+//                        function (respond) { //fail
+//                        }
+//                    );
+//                }
+//            };
+//            ajax(params);
         });
         setInterval(function() {
             var user_id = $("#user_id").val();

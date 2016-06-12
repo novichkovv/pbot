@@ -80,3 +80,5 @@ CREATE TABLE user_phrases (
   phrase_id BIGINT UNSIGNED NOT NULL,
   create_date DATETIME NOT NULL
 )ENGINE=MyISAM;
+
+ALTER TABLE queues ADD global_plot TINYINT NOT NULL DEFAULT 0 AFTER sms;

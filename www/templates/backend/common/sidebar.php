@@ -15,6 +15,13 @@
                     <span class="selected"></span>
                 </a>
             </li>
+            <li class="start <?php if(registry::get('route_parts')[0] == 'emulator') echo 'active'; ?>">
+                <a href="<?php echo SITE_DIR; ?>emulator/">
+                    <i class="icon-bubbles"></i>
+                    <span class="title">Messages</span>
+                    <span class="selected"></span>
+                </a>
+            </li>
         </ul>
     </div>
 </div>
