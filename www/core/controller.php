@@ -28,7 +28,6 @@ abstract class controller extends base
 
     function __construct($controller, $action)
     {
-        $this->writeLog('test', 'd');
         if(isset($_POST['log_out_btn'])) {
             $this->logOut();
             header('Location: ' . SITE_DIR);

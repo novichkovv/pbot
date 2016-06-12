@@ -9,4 +9,4 @@ require_once('config.php');
 require_once(CORE_DIR . 'registry.php');
 require_once(CORE_DIR . 'autoload.php');
 $api = new api_class();
-$api->sendMessage('79263335708', 'Hello');
+$api->sendMessage('12132213884', 'Hello');
