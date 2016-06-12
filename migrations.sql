@@ -82,3 +82,4 @@ CREATE TABLE user_phrases (
 )ENGINE=MyISAM;
 
 ALTER TABLE queues ADD global_plot TINYINT NOT NULL DEFAULT 0 AFTER sms;
+ALTER TABLE queues ADD recipient VARCHAR(255) NOT NULL AFTER message_id;

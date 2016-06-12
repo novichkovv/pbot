@@ -34,7 +34,8 @@ class cron_class extends base
                     'user_id' => $v['user_id'],
                     'text' => $v['content'],
                     'status' => $v['message_status'],
-                    'id' => $v['id']
+                    'id' => $v['id'],
+                    'recipient' => $v['recipient']
                 );
             } else {
                 $concat[$v['concat']]['parts'][$v['concat_count']]['content'] = $v['content'];
@@ -60,7 +61,8 @@ class cron_class extends base
                         'user_id' => $v['user_id'],
                         'text' => implode('', $parts),
                         'status' => $v['message_status'],
-                        'id' => $last['id']
+                        'id' => $last['id'],
+                        'recipient' => $v['recipient']
                     );
 
 
@@ -196,7 +198,6 @@ class cron_class extends base
             }
         }
         if(!$sms) {
-            $this->writeLog('test', $wildcard);
             foreach ($wildcard as $v) {
                 if($user_phrases[11][$v['id']]) {
                     continue;
@@ -226,7 +227,8 @@ class cron_class extends base
             'user_id' => $message['user_id'],
             'send_time' => date('Y-m-d H:i:s', $message['time'] + $delay),
             'message_id' => $message['id'],
-            'global_plot' => $global ? 1 : 0
+            'global_plot' => $global ? 1 : 0,
+            'recipient' => $message['recipient']
         );
         $this->putInQueue($res);
     }
@@ -258,7 +260,7 @@ class cron_class extends base
         $message['sent'] = 1;
         $this->model('queues')->insert($message);
         if(!in_array($message['phone'], [111,222,333,444,555,666,777,888,999])) {
-            $this->api()->sendMessage($message['phone'], $message['sms']);
+            $this->api()->sendMessage($message['phone'], $message['sms'], ['from' => $message['recipient']]);
         }
     }
 

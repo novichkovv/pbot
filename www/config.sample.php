@@ -4,6 +4,7 @@
  */
 
 error_reporting(E_ERROR | E_WARNING | E_PARSE);
+date_default_timezone_set('France/Paris');
 define('DS', DIRECTORY_SEPARATOR);
 define('ROOT_DIR', realpath($_SERVER['DOCUMENT_ROOT']) . DS);
 define('CORE_DIR', ROOT_DIR . 'core' . DS);
