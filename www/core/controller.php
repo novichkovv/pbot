@@ -28,6 +28,7 @@ abstract class controller extends base
 
     function __construct($controller, $action)
     {
+        $this->writeLog('test', 'd');
         if(isset($_POST['log_out_btn'])) {
             $this->logOut();
             header('Location: ' . SITE_DIR);
@@ -174,7 +175,6 @@ abstract class controller extends base
                 'user_password' => $_SESSION['user']['user_password']
             ))
             ) {
-                $this->writeLog('test', $user);
                 registry::set('auth', true);
                 registry::set('user', $user);
                 return true;
