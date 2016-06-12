@@ -257,6 +257,9 @@ class cron_class extends base
         $this->model('messages')->insert($row);
         $message['sent'] = 1;
         $this->model('queues')->insert($message);
+        if(!in_array($message['phone'], [111,222,333,444,555,666,777,888,999])) {
+            $this->api()->sendMessage($message['phone'], $message['sms']);
+        }
     }
 
     public function checkGlobals()
