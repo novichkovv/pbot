@@ -44,7 +44,7 @@ abstract class controller extends base
         registry::set('log', array());
         $this->controller_name = $controller;
         $this->check_auth = $this->checkAuth();
-        if(PROJECT != 'frontend' && !$this->check_auth and !in_array($controller, array('common_controller', 'index_controller'))) {
+        if(PROJECT != 'frontend' && !$this->check_auth and !in_array($controller, array('common_controller', 'index_controller', 'api_controller'))) {
             header('Location: ' . SITE_DIR);
             exit;
         }
