@@ -37,6 +37,16 @@ class emulator_controller extends controller
                 require_once(ROOT_DIR . 'cron.php');
                 exit;
                 break;
+
+            case "clear_chat":
+                if(empty($_POST['user_id'])) {
+                    exit;
+                }
+                $this->model('user_phrases')->delete('user_id', $_POST['user_id']);
+                $this->model('messages')->delete('user_id', $_POST['user_id']);
+                $this->model('queues')->delete('user_id', $_POST['user_id']);
+                exit;
+                break;
         }
     }
 

@@ -1,6 +1,28 @@
 <br>
 <div class="row">
     <div class="col-md-6">
+        <form>
+            <label class="control-label col-md-3">Change User</label>
+            <div class="col-md-9">
+                <select id="user_id" class="form-control" name="user_id">
+                    <?php if ($users): ?>
+                        <?php foreach ($users as $v): ?>
+                            <option value="<?php echo $v['id']; ?>"
+                                <?php if ($v['id'] == $_GET['user_id']): ?>
+                                    selected
+                                <?php endif; ?>>
+                                <?php echo $v['phone']; ?>
+                            </option>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </select>
+            </div>
+        </form>
+    </div>
+</div>
+<br>
+<div class="row">
+    <div class="col-md-6">
         <div class="portlet light bordered">
             <div class="portlet-title">
                 <div class="caption font-dark">
@@ -8,10 +30,9 @@
                     <span class="caption-subject bold uppercase"> Message</span>
                 </div>
                 <div class="actions">
+
 <!--                    <div class="btn-group btn-group-devided">-->
-<!--                        <button class="btn green btn-outline btn-circle" type="button" id="add_phrase">-->
-<!--                            <i class="fa fa-plus"></i>-->
-<!--                        </button>-->
+<!--
 <!--                        <a class="btn red btn-outline btn-circle delete_phrases" href="#delete_modal" data-toggle="modal">-->
 <!--                            <i class="fa fa-trash-o"></i>-->
 <!--                        </a>-->
@@ -63,20 +84,9 @@
                     <span class="caption-subject bold uppercase"> Chat</span>
                 </div>
                 <div class="actions">
-                    <form>
-                        <select id="user_id" class="form-control" name="user_id">
-                            <?php if ($users): ?>
-                                <?php foreach ($users as $user): ?>
-                                    <option value="<?php echo $user['id']; ?>"
-                                        <?php if ($user['id'] == $_GET['user_id']): ?>
-                                            selected
-                                        <?php endif; ?>>
-                                        <?php echo $user['phone']; ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
-                        </select>
-                    </form>
+                    <a class="btn blue btn-outline" data-toggle="modal" href="#clear_chat_modal" id="clear_chat">
+                        <i class="fa fa-refresh"></i> Clear Chat
+                    </a>
                 </div>
             </div>
             <div class="portlet-body" id="chats">
@@ -87,17 +97,47 @@
         </div>
     </div>
 </div>
-    <div class="row">
-        <div class="col-md-6">
-
+<div class="modal fade" id="clear_chat_modal">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Clear Chat</h4>
+            </div>
+            <div class="modal-body with-padding">
+                <p>Are you sure you want to delete all chat messages for <br>user with phone #<span id="phone_no"></span></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="clear_chat_btn" class="btn btn-primary">Yes</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+            </div>
         </div>
     </div>
+</div>
 <script type="text/javascript">
     $ = jQuery.noConflict();
     $(document).ready(function () {
+        $("body").on("click", "#clear_chat_btn", function () {
+            var user_id = $(this).attr('data-id');
+            var params = {
+                'action': 'clear_chat',
+                'values': {user_id: user_id},
+                'callback': function (msg) {
+                    $(".scroll").html('');
+                    $("#clear_chat_modal").modal('hide');
+                }
+            };
+            ajax(params);
+        });
         if($('.message').length) {
             $(".scroll").scrollTop($('.message').last().offset().top);
         }
+        $("#clear_chat").click(function() {
+            var user_id = $("#user_id").val();
+            var phone = $("#user_id option[value='" + user_id + "']").html();
+            $("#phone_no").html(phone);
+            $("#clear_chat_btn").attr('data-id', user_id);
+        });
 //        console.log($('#chats').last().offset().top);
         $('#user_id').change(function() {
             $(this).closest('form').submit();
