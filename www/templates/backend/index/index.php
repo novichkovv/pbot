@@ -31,7 +31,7 @@
                             <th style="width: 70px;">Delay</th>
                             <th style="width: 310px;">Mask</th>
                             <th>Reply</th>
-                            <th style="width: 158px;">Action</th>
+                            <th style="width: 273px;">Action</th>
                         </tr>
                         </thead>
                         <tbody id="table_body">

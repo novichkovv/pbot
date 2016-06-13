@@ -9,7 +9,6 @@ class api_controller extends controller
 {
     public function index()
     {
-        $this->writeLog('test', 1);
         require_once(ROOT_DIR . 'cron.php');
         $request = array_merge($_GET, $_POST);
         $this->writeLog('test', $request);

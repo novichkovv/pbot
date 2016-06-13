@@ -127,6 +127,9 @@
                     ajax_respond(msg,
                         function (respond) { //success
                             $(".scroll").html(respond.template);
+                            if($('.message').length) {
+                                $(".scroll").scrollTop($('.message').last().offset().top + 2000);
+                            }
 //                            /console.log($('#timestamp'));
                             $('#timestamp').val(respond.time);
                         },
@@ -140,6 +143,21 @@
         $("#form").submit(function(e) {
             e.preventDefault();
             var message = get_from_form('#form');
+            var reload = false;
+            if($('[name="user_id"]').val() == message['msisdn']) {
+                reload = false;
+            } else {
+                $('[name="user_id"] option').each(function()
+                {
+                    if($(this).html() ==  message['msisdn']) {
+                        reload = true;
+                        $('[name="user_id"]').val($(this).attr('value'));
+                    }
+                });
+
+            }
+
+//            $('[name="user_id"]').val($('[name="user_id"] option[name="' + message['msisdn'] + '"]').val());
             message.send = null;
 //            console.log(message);
             if(message.text.length > 10) {
@@ -177,7 +195,7 @@
                                             $(".scroll").html(respond.template);
                                             $('[name="message-timestamp"]').val(respond.time);
                                             if($('.message').length) {
-                                                $(".scroll").scrollTop($('.message').last().offset().top);
+                                                $(".scroll").scrollTop($('.message').last().offset().top + 2000);
                                             }
                                         },
                                         function (respond) { //fail
@@ -213,7 +231,7 @@
                                         $(".scroll").html(respond.template);
                                         $('[name="message-timestamp"]').val(respond.time);
                                         if($('.message').length) {
-                                            $(".scroll").scrollTop($('.message').last().offset().top);
+                                            $(".scroll").scrollTop($('.message').last().offset().top + 2000);
                                         }
                                     },
                                     function (respond) { //fail
@@ -240,6 +258,9 @@
 //                }
 //            };
 //            ajax(params);
+            if(reload) {
+                $('#user_id').closest('from').submit();
+            }
             return false;
         })
     });

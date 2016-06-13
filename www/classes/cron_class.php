@@ -9,7 +9,6 @@ class cron_class extends base
 {
     public function init()
     {
-//        echo preg_match("/(hey|hello)/i", "Hey There");
         $this->readMessages();
     }
 
@@ -72,7 +71,6 @@ class cron_class extends base
         foreach ($messages as $message) {
             $this->manageMessage($message);
         }
-//        print_r($messages);
     }
 
     private function manageMessage($message)
@@ -96,26 +94,26 @@ class cron_class extends base
                     $welcome = $v;
                     break;
                 case "3":
-                    $once[$v['sort_order']] = $v;
+                    $once[] = $v;
                     break;
                 case "4":
-                    $highest_wt[$v['sort_order']] = $v;
+                    $highest_wt[] = $v;
                     break;
                 case "5":
-                    $high_wt[$v['sort_order']] = $v;
+                    $high_wt[] = $v;
                     break;
                 case "6":
-                    $normal_wt[$v['sort_order']] = $v;
+                    $normal_wt[] = $v;
                     break;
                 case "2":
                 case "8":
                     $macro[$v['mask']] = $v['reply'];
                     break;
                 case "9":
-                    $globals[$v['sort_order']] = $v;
+                    $globals[] = $v;
                     break;
                 case "11":
-                    $wildcard[$v['sort_order']] = $v;
+                    $wildcard[] = $v;
                     break;
             }
         }
@@ -131,16 +129,14 @@ class cron_class extends base
         if(!$user_phrases && isset($welcome)) {
             $sms = $welcome['reply'];
             $delay = $welcome['delay'];
-            $this->model('user_phrases')->insert(['user_id' => $message['user_id'], 'phrase_id' => 1, 'create_date' => date('Y-m-d H:i:s')]);
+            $this->model('user_phrases')->insert(['user_id' => $message['user_id'], 'phrase_id' => $welcome['id'], 'create_date' => date('Y-m-d H:i:s')]);
         }
         if(!$sms) {
             foreach ($highest_wt as $v) {
-//                if($user_phrases[4][$v['id']]) {
-//                    continue;
-//                }
-                if(preg_match("/" . $v['mask'] . "/", $message['text'])) {
+                if(preg_match("/" . $v['mask'] . "/", $message['text'], $matches)) {
                     $sms = $v['reply'];
                     $delay = $v['delay'];
+                    $match_word = $matches[0];
                     $this->model('user_phrases')->insert(['user_id' => $message['user_id'], 'phrase_id' => $v['id'], 'create_date' => date('Y-m-d H:i:s')]);
                     break;
                 }
@@ -148,10 +144,8 @@ class cron_class extends base
         }
         if(!$sms) {
             foreach ($high_wt as $v) {
-//                if($user_phrases[5][$v['id']]) {
-//                    continue;
-//                }
-                if(preg_match("/" . $v['mask'] . "/", $message['text'])) {
+                if(preg_match("/" . $v['mask'] . "/", $message['text'], $matches)) {
+                    $match_word = $matches[0];
                     $sms = $v['reply'];
                     $delay = $v['delay'];
                     $this->model('user_phrases')->insert(['user_id' => $message['user_id'], 'phrase_id' => $v['id'], 'create_date' => date('Y-m-d H:i:s')]);
@@ -176,7 +170,8 @@ class cron_class extends base
 //                if($user_phrases[6][$v['id']]) {
 //                    continue;
 //                }
-                if(preg_match("/" . $v['mask'] . "/", $message['text'])) {
+                if(preg_match("/" . $v['mask'] . "/", $message['text'], $matches)) {
+                    $match_word = $matches[0];
                     $sms = $v['reply'];
                     $delay = $v['delay'];
                     $this->model('user_phrases')->insert(['user_id' => $message['user_id'], 'phrase_id' => $v['id'], 'create_date' => date('Y-m-d H:i:s')]);
@@ -189,9 +184,10 @@ class cron_class extends base
                 if($user_phrases[3][$v['id']]) {
                     continue;
                 }
-                if(preg_match("/" . $v['mask'] . "/i", $message['text'])) {
+                if(preg_match("/" . $v['mask'] . "/i", $message['text'], $matches)) {
                     $sms = $v['reply'];
                     $delay = $v['delay'];
+                    $match_word = $matches[0];
                     $this->model('user_phrases')->insert(['user_id' => $message['user_id'], 'phrase_id' => $v['id'], 'create_date' => date('Y-m-d H:i:s')]);
                     break;
                 }
@@ -208,18 +204,23 @@ class cron_class extends base
                 break;
             }
         }
-        preg_match("/\{[^\}]*\}/", $sms, $matches);
-        if($matches) {
-            foreach ($matches as $match) {
-                $m = strtr($match, array('{' => '', '}' => ''));
-                $arr = explode('|', $m);
-                $choice = $arr[rand(0, count($arr) - 1)];
-                $sms = str_replace($match, $choice, $sms);
-            }
-        }
         $sms = strtr($sms, $macro);
         if(!$delay) {
             $delay = MIN_DELAY;
+        }
+        preg_match_all("/\{[^\}]*\}/", $sms, $matches);
+        if($matches[0]) {
+            foreach ($matches[0] as $match) {
+                $m = strtr($match, array('{' => '', '}' => ''));
+                $arr = explode('|', $m);
+                foreach ($arr as $k => $v) {
+                    if(!empty($match_word) && false !== strpos($v, $match_word) && count($arr) > 1) {
+                        unset($arr[$k]);
+                    }
+                }
+                $choice = $arr[array_rand($arr)];
+                $sms = str_replace($match, $choice, $sms);
+            }
         }
         $res = array(
             'sms' => $sms,
@@ -235,12 +236,14 @@ class cron_class extends base
 
     private function putInQueue(array $message)
     {
-        $row = [];
-        $row['message_status'] = 1;
-        $row['id'] = $message['message_id'];
-        $this->model('messages')->insert($row);
-        $message['create_date'] = date('Y-m-d H:i:s');
-        $this->model('queues')->insert($message);
+        if($message) {
+            $row = [];
+            $row['message_status'] = 1;
+            $row['id'] = $message['message_id'];
+            $this->model('messages')->insert($row);
+            $message['create_date'] = date('Y-m-d H:i:s');
+            $this->model('queues')->insert($message);
+        }
     }
 
     public function checkQueue()
@@ -253,14 +256,16 @@ class cron_class extends base
 
     private function sendMessage($message)
     {
-        $row = [];
-        $row['message_status'] = 2;
-        $row['id'] = $message['message_id'];
-        $this->model('messages')->insert($row);
-        $message['sent'] = 1;
-        $this->model('queues')->insert($message);
-        if(!in_array($message['phone'], [111,222,333,444,555,666,777,888,999])) {
-            $this->api()->sendMessage($message['phone'], $message['sms'], ['from' => $message['recipient']]);
+        if($message) {
+            $row = [];
+            $row['message_status'] = 2;
+            $row['id'] = $message['message_id'];
+            $this->model('messages')->insert($row);
+            $message['sent'] = 1;
+            $this->model('queues')->insert($message);
+            if(!in_array($message['phone'], [111,222,333,444,555,666,777,888,999])) {
+                $this->api()->sendMessage($message['phone'], $message['sms'], ['from' => $message['recipient']]);
+            }
         }
     }
 
