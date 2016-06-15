@@ -11,19 +11,17 @@ class api_controller extends controller
     {
         require_once(ROOT_DIR . 'cron.php');
         $request = array_merge($_GET, $_POST);
-        $this->writeLog('test', $request);
         if (!isset($request['to']) OR !isset($request['msisdn']) OR !isset($request['text'])) {
             $this->writeLog("INCOMING", 'This is not a delivery receipt');
             exit;
         }
-        //print_r($request);
         $row = [];
         if(!$user = $this->model('users')->getByField('phone', $request['msisdn'])) {
             $user['phone'] = $request['msisdn'];
             $user['create_date'] = date('Y-m-d H:i:s');
             $user['id'] = $this->model('users')->insert($user);
         }
-        //id, message_status, user_id, message_id, recipient, message_type, content, udh, concat, concat_count, concat_total, push_date, create_date, id, id
+        $active_campaign = $this->model('campaigns')->getByField('phone', $request['to']);
         $row['user_id'] = $user['id'];
         $row['message_id'] = $request['messageId'];
         $row['recipient'] = $request['to'];
@@ -47,9 +45,10 @@ class api_controller extends controller
             $row['concat_count'] = $request['concat-part'];
             $row['concat_total'] = $request['concat-total'];
         }
+        $row['campaign_id'] = $active_campaign['id'];
         $row['push_date'] = date('Y-m-d H:i:s', strtotime($request['message-timestamp']));
         $row['create_date'] = date('Y-m-d H:i:s');
-        $this->model('messages')->markOtherMessages($user['id']);
+        $this->model('messages')->markOtherMessages($user['id'], $active_campaign['id']);
         $this->model('messages')->insert($row);
         exit;
     }

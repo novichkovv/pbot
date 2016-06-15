@@ -15,3 +15,6 @@
 .custom-datatable .datatable-footer {
     text-align: center;
 }
+.active_campaign {
+    background-color: #e3dfff;
+}

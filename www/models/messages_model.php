@@ -25,11 +25,11 @@ class messages_model extends model
         return $this->get_all($stm);
     }
 
-    public function markOtherMessages($user_id)
+    public function markOtherMessages($user_id, $campaign_id)
     {
         $stm = $this->pdo->prepare('
-            UPDATE messages SET message_status = 3 WHERE user_id = :user_id AND message_status = 0 AND IF(concat IS NOT NULL, concat_count = concat_total, 1)
+            UPDATE messages SET message_status = 3 WHERE user_id = :user_id AND message_status = 0 AND IF(concat IS NOT NULL, concat_count = concat_total, 1) AND campaign_id = :campaign_id
         ');
-        $stm->execute(['user_id' => $user_id]);
+        $stm->execute(['user_id' => $user_id, 'campaign_id' => $campaign_id]);
     }
 }

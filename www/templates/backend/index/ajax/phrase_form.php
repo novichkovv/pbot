@@ -36,6 +36,7 @@
         <?php if ($phrase['id']): ?>
             <input type="hidden" name="phrase[id]" value="<?php echo $phrase['id']; ?>"> 
         <?php endif; ?>
+        <input type="hidden" name="phrase[campaign_id]" value="<?php echo $campaign_id ? $campaign_id : $phrase['campaign_id']; ?>">
         <button type="button" class="btn btn-info save_phrase_btn">Save</button>
         <button type="button" class="btn btn-warning cancel">Cancel</button>
     </td>

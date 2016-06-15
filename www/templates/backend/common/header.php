@@ -27,8 +27,9 @@
 
     <ul class="nav navbar-nav pull-right">
         <li>
-            <br>
-            <?php echo registry::get('user')['user_name']; ?>
+           <div style="color: #fff; margin-top: 16px;">
+               <?php echo registry::get('user')['user_name']; ?>
+           </div>
         </li>
         <li class="dropdown dropdown-quick-sidebar-toggler">
             <a href="javascript:;" onclick="document.getElementById('logout-form').submit();" class="dropdown-toggle">

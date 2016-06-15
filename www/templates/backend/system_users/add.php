@@ -17,7 +17,7 @@
                 <div class="portlet-body">
                     <div class="form-group">
                         <label>User Name (login) *</label>
-                        <input type="text" name="user_name" autocomplete="off" class="form-control"  data-require="1">
+                        <input type="text" name="user_name" autocomplete="off" class="form-control"  data-require="1" value="<?php echo $user['user_name']; ?>">
 
                         <div class="error-require validate-message">
                             Required Field
@@ -25,7 +25,7 @@
                     </div>
                     <div class="form-group">
                         <label>Password *</label>
-                        <input type="password" name="user_password" autocomplete="off" class="form-control"
+                        <input type="password" name="user_password" autocomplete="off" class="form-control" value="<?php echo $password; ?>"
                             <?php if (!$_GET['id']): ?>
                                 data-require="1"
                             <?php else: ?>
@@ -33,6 +33,9 @@
                             <?php endif; ?>>
                         <div class="error-require validate-message">
                             Required Field
+                        </div>
+                        <div class="validate-message" style="display: block;">
+                            <?php echo $user_name_error; ?>
                         </div>
                     </div>
                     <div class="form-group">
@@ -43,6 +46,7 @@
         </form>
     </div>
 </div>
+
 <script type="text/javascript">
     $ = jQuery.noConflict();
     $(document).ready(function () {

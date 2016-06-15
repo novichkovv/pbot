@@ -34,7 +34,8 @@ class cron_class extends base
                     'text' => $v['content'],
                     'status' => $v['message_status'],
                     'id' => $v['id'],
-                    'recipient' => $v['recipient']
+                    'recipient' => $v['recipient'],
+                    'campaign_id' => $v['campaign_id']
                 );
             } else {
                 $concat[$v['concat']]['parts'][$v['concat_count']]['content'] = $v['content'];
@@ -61,7 +62,8 @@ class cron_class extends base
                         'text' => implode('', $parts),
                         'status' => $v['message_status'],
                         'id' => $last['id'],
-                        'recipient' => $v['recipient']
+                        'recipient' => $v['recipient'],
+                        'campaign_id' => $v['campaign_id']
                     );
 
 
@@ -75,12 +77,12 @@ class cron_class extends base
 
     private function manageMessage($message)
     {
-        if($this->model('queues')->getByFields(['user_id' => $message['user_id'], 'sent' => 0])) {
-            $this->model('messages')->markOtherMessages($message['user_id']);
+        if($this->model('queues')->getByFields(['user_id' => $message['user_id'], 'sent' => 0, 'campaign_id' => $message['campaign_id']])) {
+            $this->model('messages')->markOtherMessages($message['user_id'], $message['campaign_id']);
             return;
         }
-        $user_phrases = $this->model('phrases')->getLastUserPhrases($message['user_id']);
-        $phrases = $this->model('phrases')->getAll('sort_order');
+        $user_phrases = $this->model('phrases')->getLastUserPhrases($message['user_id'], $message['campaign_id']);
+        $phrases = $this->model('phrases')->getByField('campaign_id', $message['campaign_id'], true, 'sort_order');
         $highest_wt = [];
         $macro = [];
         $once = [];
@@ -133,7 +135,7 @@ class cron_class extends base
         }
         if(!$sms) {
             foreach ($highest_wt as $v) {
-                if(preg_match("/" . $v['mask'] . "/", $message['text'], $matches)) {
+                if(@preg_match("/" . $v['mask'] . "/", $message['text'], $matches)) {
                     $sms = $v['reply'];
                     $delay = $v['delay'];
                     $match_word = $matches[0];
@@ -144,7 +146,7 @@ class cron_class extends base
         }
         if(!$sms) {
             foreach ($high_wt as $v) {
-                if(preg_match("/" . $v['mask'] . "/", $message['text'], $matches)) {
+                if(@preg_match("/" . $v['mask'] . "/", $message['text'], $matches)) {
                     $match_word = $matches[0];
                     $sms = $v['reply'];
                     $delay = $v['delay'];
@@ -170,7 +172,7 @@ class cron_class extends base
 //                if($user_phrases[6][$v['id']]) {
 //                    continue;
 //                }
-                if(preg_match("/" . $v['mask'] . "/", $message['text'], $matches)) {
+                if(@preg_match("/" . $v['mask'] . "/", $message['text'], $matches)) {
                     $match_word = $matches[0];
                     $sms = $v['reply'];
                     $delay = $v['delay'];
@@ -184,7 +186,7 @@ class cron_class extends base
                 if($user_phrases[3][$v['id']]) {
                     continue;
                 }
-                if(preg_match("/" . $v['mask'] . "/i", $message['text'], $matches)) {
+                if(@preg_match("/" . $v['mask'] . "/i", $message['text'], $matches)) {
                     $sms = $v['reply'];
                     $delay = $v['delay'];
                     $match_word = $matches[0];
@@ -208,7 +210,7 @@ class cron_class extends base
         if(!$delay) {
             $delay = MIN_DELAY;
         }
-        preg_match_all("/\{[^\}]*\}/", $sms, $matches);
+        @preg_match_all("/\{[^\}]*\}/", $sms, $matches);
         if($matches[0]) {
             foreach ($matches[0] as $match) {
                 $m = strtr($match, array('{' => '', '}' => ''));
@@ -229,18 +231,21 @@ class cron_class extends base
             'send_time' => date('Y-m-d H:i:s', $message['time'] + $delay),
             'message_id' => $message['id'],
             'global_plot' => $global ? 1 : 0,
-            'recipient' => $message['recipient']
+            'recipient' => $message['recipient'],
+            'campaign_id' => $message['campaign_id']
         );
         $this->putInQueue($res);
     }
 
     private function putInQueue(array $message)
     {
-        if($message) {
-            $row = [];
-            $row['message_status'] = 1;
-            $row['id'] = $message['message_id'];
-            $this->model('messages')->insert($row);
+        if($message['sms']) {
+            if ($message['message_id']) {
+                $row = [];
+                $row['message_status'] = 1;
+                $row['id'] = $message['message_id'];
+                $this->model('messages')->insert($row);
+            }
             $message['create_date'] = date('Y-m-d H:i:s');
             $this->model('queues')->insert($message);
         }
@@ -256,11 +261,13 @@ class cron_class extends base
 
     private function sendMessage($message)
     {
-        if($message) {
-            $row = [];
-            $row['message_status'] = 2;
-            $row['id'] = $message['message_id'];
-            $this->model('messages')->insert($row);
+        if($message['sms']) {
+            if ($message['message_id']) {
+                $row = [];
+                $row['message_status'] = 2;
+                $row['id'] = $message['message_id'];
+                $this->model('messages')->insert($row);
+            }
             $message['sent'] = 1;
             $this->model('queues')->insert($message);
             if(!in_array($message['phone'], [111,222,333,444,555,666,777,888,999])) {
@@ -274,73 +281,76 @@ class cron_class extends base
         /*
          * Global plots
          */
-        $globals = $this->model('phrases')->getByField('status_id', 9, true, 'sort_order');
-        $to_keep = $this->model('queues')->getForGlobals();
-        foreach ($to_keep as $user_to_keep) {
-            $user_phrases = $this->model('phrases')->getLastUserPhrases($user_to_keep['user_id']);
-            foreach ($globals as $global) {
-                if($user_phrases[9][$global['id']]) {
-                    continue;
+        foreach ($this->model('campaigns')->getAll() as $campaign) {
+            $to_keep = $this->model('queues')->getForGlobals($campaign['id']);
+            $globals = $this->model('phrases')->getByFields(['status_id' => 9, 'campaign_id' => $campaign['id']], true, 'sort_order');
+            foreach ($to_keep as $user_to_keep) {
+                $user_phrases = $this->model('phrases')->getLastUserPhrases($user_to_keep['user_id'], $campaign['id']);
+                foreach ($globals as $global) {
+                    if($user_phrases[9][$global['id']]) {
+                        continue;
+                    }
+                    $tmp = $this->model('phrases')->getPhrasesWithStatusIn([2,8], $campaign['id']);
+                    $macro = [];
+                    foreach ($tmp as $v) {
+                        $macro[$v['mask']] = $v['reply'];
+                    }
+                    $sms = strtr($global['reply'], $macro);
+                    $res = array(
+                        'sms' => $sms,
+                        'phone' => $user_to_keep['phone'],
+                        'user_id' => $user_to_keep['user_id'],
+                        'send_time' => date('Y-m-d H:i:s'),
+                        'message_id' => 0,
+                        'global_plot' => 1,
+                        'campaign_id' => $campaign['id']
+                    );
+                    $this->model('user_phrases')->insert(['user_id' => $user_to_keep['user_id'], 'phrase_id' => $global['id'], 'create_date' => date('Y-m-d H:i:s')]);
+                    $this->putInQueue($res);
+                    break;
                 }
-                $tmp = $this->model('phrases')->getByFieldIn('status_id', [2,8], true);
-                $macro = [];
-                foreach ($tmp as $v) {
-                    $macro[$v['mask']] = $v['reply'];
-                }
-                $sms = strtr($global['reply'], $macro);
-                $res = array(
-                    'sms' => $sms,
-                    'phone' => $user_to_keep['phone'],
-                    'user_id' => $user_to_keep['user_id'],
-                    'send_time' => date('Y-m-d H:i:s'),
-                    'message_id' => 0,
-                    'global_plot' => 1
-                );
-                $this->model('user_phrases')->insert(['user_id' => $user_to_keep['user_id'], 'phrase_id' => $global['id'], 'create_date' => date('Y-m-d H:i:s')]);
-                $this->putInQueue($res);
-                break;
             }
 
-        }
-
-
-
-        /*
-         * keep alive
-         */
-        $keeps = $this->model('phrases')->getByField('status_id', 10, true);
-        foreach ($keeps as $keep) {
-            $to_keep = $this->model('queues')->getToKeepAlive($keep['delay']);
-            foreach ($to_keep as $user_to_keep) {
-                $user_phrases = $this->model('phrases')->getLastUserPhrases($user_to_keep['user_id']);
-                $stop = false;
-                if($user_phrases[10]) {
-                    foreach ($user_phrases[10] as $kept) {
-                        if($kept['delay'] == $keep['delay']) {
-                            $stop = true;
+            /*
+             * keep alive
+             */
+            $keeps = $this->model('phrases')->getByField('status_id', 10, true);
+            foreach ($keeps as $keep) {
+                $to_keep = $this->model('queues')->getToKeepAlive($keep['delay'], $campaign['id']);
+                foreach ($to_keep as $user_to_keep) {
+                    $user_phrases = $this->model('phrases')->getLastUserPhrases($user_to_keep['user_id'], $campaign['id']);
+                    $stop = false;
+                    if($user_phrases[10]) {
+                        foreach ($user_phrases[10] as $kept) {
+                            if($kept['delay'] == $keep['delay']) {
+                                $stop = true;
+                            }
                         }
                     }
+                    if($stop) {
+                        continue;
+                    }
+                    $tmp = $this->model('phrases')->getPhrasesWithStatusIn([2,8], $campaign['id']);
+                    $macro = [];
+                    foreach ($tmp as $v) {
+                        $macro[$v['mask']] = $v['reply'];
+                    }
+                    $sms = strtr($keep['reply'], $macro);
+                    $res = array(
+                        'sms' => $sms,
+                        'phone' => $user_to_keep['phone'],
+                        'user_id' => $user_to_keep['user_id'],
+                        'send_time' => date('Y-m-d H:i:s'),
+                        'message_id' => 0,
+                        'global_plot' => 1,
+                        'campaign_id' => $campaign['id']
+                    );
+                    $this->model('user_phrases')->insert(['user_id' => $user_to_keep['user_id'], 'phrase_id' => $keep['id'], 'create_date' => date('Y-m-d H:i:s')]);
+                    $this->putInQueue($res);
                 }
-                if($stop) {
-                    continue;
-                }
-                $tmp = $this->model('phrases')->getByFieldIn('status_id', [2,8], true);
-                $macro = [];
-                foreach ($tmp as $v) {
-                    $macro[$v['mask']] = $v['reply'];
-                }
-                $sms = strtr($keep['reply'], $macro);
-                $res = array(
-                    'sms' => $sms,
-                    'phone' => $user_to_keep['phone'],
-                    'user_id' => $user_to_keep['user_id'],
-                    'send_time' => date('Y-m-d H:i:s'),
-                    'message_id' => 0,
-                    'global_plot' => 1
-                );
-                $this->model('user_phrases')->insert(['user_id' => $user_to_keep['user_id'], 'phrase_id' => $keep['id'], 'create_date' => date('Y-m-d H:i:s')]);
-                $this->putInQueue($res);
             }
         }
+
+
     }
 }

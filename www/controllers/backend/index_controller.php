@@ -21,7 +21,23 @@ class index_controller extends controller
         $this->render('breadcrumbs', array(
             array('name' => 'Dashboard')
         ));
-        $this->render('phrases', $this->model('phrases')->getPhrases());
+
+        if(isset($_GET['campaign_id'])) {
+            $_SESSION['campaign'] = $_GET['campaign_id'];
+            header('Location: ' . SITE_DIR);
+        }
+
+        $campaigns = $this->model('campaigns')->getByField('system_user_id', registry::get('user')['id'], true);
+        if(isset($_SESSION['campaign'])) {
+            $this->render('phrases', $this->model('phrases')->getPhrases($_SESSION['campaign']));
+        } elseif($campaigns) {
+            $this->render('phrases', $this->model('phrases')->getPhrases($campaigns[0]));
+            $_SESSION['campaign'] = $campaigns[0]['id'];
+        } else {
+            $this->render('no_campaigns', true);
+        }
+        $this->render('campaign_id', $_SESSION['campaign']);
+        $this->render('campaigns', $campaigns);
         $this->render('statuses', $this->model('statuses')->getAll());
         $this->view('index' . DS . 'index');
     }

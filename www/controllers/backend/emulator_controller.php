@@ -18,8 +18,21 @@ class emulator_controller extends controller
         if($_GET['user_id']) {
             $user = $this->model('users')->getById($_GET['user_id']);
         }
-        $this->getMessages($user);
+
+        $campaigns = $this->model('campaigns')->getAll();
+        $this->render('campaigns', $campaigns);
+        if(!$_GET['campaign']) {
+            if($_SESSION['campaign']) {
+                $campaign = $this->model('campaigns')->getById($_SESSION['campaign']);
+            } else {
+                $campaign = $campaigns[0];
+            }
+        } else {
+            $campaign = $this->model('campaigns')->getById($_GET['campaign']);
+        }
+        $this->getMessages($user, $campaign);
         $this->render('user', $user);
+        $this->render('current_campaign', $campaign);
         $this->view('index' . DS . 'emulator');
     }
 
@@ -27,11 +40,9 @@ class emulator_controller extends controller
     {
         switch ($_REQUEST['action']) {
             case "update_messages":
-                $user = $this->model('users')->getById(1);
-                if($_POST['user_id']) {
-                    $user = $this->model('users')->getById($_POST['user_id']);
-                }
-                $this->getMessages($user);
+                $user = $this->model('users')->getById($_POST['user_id']);
+                $campaign = $this->model('campaigns')->getById($_POST['campaign_id']);
+                $this->getMessages($user, $campaign);
                 $template = $this->fetch('index' . DS . 'ajax' . DS . 'chats');
                 echo json_encode(array('status' => 1, 'template' => $template, 'time' => date('Y-m-d H:i:s')));
                 require_once(ROOT_DIR . 'cron.php');
@@ -50,10 +61,10 @@ class emulator_controller extends controller
         }
     }
 
-    private function getMessages($user)
+    private function getMessages($user, $campaign)
     {
-        $tmp = $this->model('messages')->getByField('user_id', $user['id'], true, 'push_date DESC', 12);
-        $outcoming = $this->model('queues')->getByFields(array('user_id' => $user['id'], 'sent' => 1), true, 'send_time DESC', 6);
+        $tmp = $this->model('messages')->getByFields(['user_id' => $user['id'], 'campaign_id' => $campaign['id']], true, 'push_date DESC', 100);
+        $outcoming = $this->model('queues')->getByFields(array('user_id' => $user['id'], 'sent' => 1,  'campaign_id' => $campaign['id']), true, 'send_time DESC', 6);
         $messages = [];
         $incoming = [];
         $concat = [];

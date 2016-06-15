@@ -7,7 +7,7 @@
  */ 
 class phrases_model extends model
 {
-    public function getPhrases()
+    public function getPhrases($campaign_id)
     {
         $stm = $this->pdo->prepare('
             SELECT
@@ -17,10 +17,12 @@ class phrases_model extends model
                 phrases p
                     JOIN
                 statuses s ON s.id = p.status_id
+            WHERE
+                campaign_id = :campaign_id
             ORDER BY
                 p.status_id, sort_order
         ');
-        return $this->get_all($stm);
+        return $this->get_all($stm, ['campaign_id' => $campaign_id]);
     }
 
     public function deletePhrases($ids)
@@ -31,7 +33,7 @@ class phrases_model extends model
         return $stm->execute();
     }
 
-    public function getLastUserPhrases($user_id)
+    public function getLastUserPhrases($user_id, $campaign_id)
     {
         $stm = $this->pdo->prepare('
             SELECT
@@ -44,13 +46,23 @@ class phrases_model extends model
             WHERE
                 user_id = :user_id
                     AND
+                p.campaign_id = :campaign_id
+                    AND
                 NOW() - INTERVAL 1 DAY < up.create_date
         ');
-        $tmp = $this->get_all($stm, array('user_id' => $user_id));
+        $tmp = $this->get_all($stm, array('user_id' => $user_id, 'campaign_id' => $campaign_id));
         $res = [];
         foreach ($tmp as $v) {
             $res[$v['status_id']][$v['id']] = $v;
         }
         return $res;
+    }
+
+    public function getPhrasesWithStatusIn(array $ids, $campaign_id)
+    {
+        $stm = $this->pdo->prepare('
+            SELECT * FROM phrases WHERE status_id IN (' . implode(',', $ids) . ') AND campaign_id = :campaign_id
+        ');
+        return $this->get_all($stm, array('campaign_id' => $campaign_id));
     }
 }

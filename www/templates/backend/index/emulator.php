@@ -1,21 +1,40 @@
 <br>
 <div class="row">
     <div class="col-md-6">
-        <form>
-            <label class="control-label col-md-3">Change User</label>
-            <div class="col-md-9">
-                <select id="user_id" class="form-control" name="user_id">
-                    <?php if ($users): ?>
-                        <?php foreach ($users as $v): ?>
-                            <option value="<?php echo $v['id']; ?>"
-                                <?php if ($v['id'] == $_GET['user_id']): ?>
-                                    selected
-                                <?php endif; ?>>
-                                <?php echo $v['phone']; ?>
-                            </option>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </select>
+        <form class="form-horizontal">
+            <div class="form-group">
+                <label class="control-label col-md-3">Campaign</label>
+                <div class="col-md-9">
+                    <select id="campaign_id" class="form-control" name="campaign">
+                        <?php if ($campaigns): ?>
+                            <?php foreach ($campaigns as $v): ?>
+                                <option value="<?php echo $v['id']; ?>"
+                                    <?php if ($v['id'] == $_GET['campaign']): ?>
+                                        selected
+                                    <?php endif; ?>>
+                                    <?php echo $v['campaign_name']; ?> (<?php echo $v['phone']; ?>)
+                                </option>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-md-3">Change User</label>
+                <div class="col-md-9">
+                    <select id="user_id" class="form-control" name="user_id">
+                        <?php if ($users): ?>
+                            <?php foreach ($users as $v): ?>
+                                <option value="<?php echo $v['id']; ?>"
+                                    <?php if ($v['id'] == $_GET['user_id']): ?>
+                                        selected
+                                    <?php endif; ?>>
+                                    <?php echo $v['phone']; ?>
+                                </option>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </select>
+                </div>
             </div>
         </form>
     </div>
@@ -62,7 +81,11 @@
                     </div>
                     <div class="form-group hidden ">
                         <label>To</label>
-                        <input type="text" name="to" value="79263335708" class="form-control">
+                        <input type="text" name="to" value="<?php echo $current_campaign['phone']; ?>" class="form-control">
+                    </div>
+                    <div class="form-group hidden ">
+                        <label>To</label>
+                        <input type="text" name="campaign_id" value="<?php echo $current_campaign['id']; ?>" class="form-control">
                     </div>
                     <div class="form-group hidden">
                         <label>Message Id</label>
@@ -119,9 +142,10 @@
     $(document).ready(function () {
         $("body").on("click", "#clear_chat_btn", function () {
             var user_id = $(this).attr('data-id');
+            var campaign_id = $("#campaign_id").val();
             var params = {
                 'action': 'clear_chat',
-                'values': {user_id: user_id},
+                'values': {user_id: user_id, campaign_id: campaign_id},
                 'callback': function (msg) {
                     $(".scroll").html('');
                     $("#clear_chat_modal").modal('hide');
@@ -139,30 +163,15 @@
             $("#clear_chat_btn").attr('data-id', user_id);
         });
 //        console.log($('#chats').last().offset().top);
-        $('#user_id').change(function() {
+        $('#user_id, #campaign_id').change(function() {
             $(this).closest('form').submit();
-//            var user_id = $("#user_id").val();
-//            var params = {
-//                'action': 'update_messages',
-//                'values': {user_id: user_id},
-//                'callback': function (msg) {
-//                    ajax_respond(msg,
-//                        function (respond) { //success
-//                            $(".scroll").html(respond.template);
-//                            $('#timestamp').val(respond.time);
-//                        },
-//                        function (respond) { //fail
-//                        }
-//                    );
-//                }
-//            };
-//            ajax(params);
         });
         setInterval(function() {
             var user_id = $("#user_id").val();
+            var campaign_id = $("#campaign_id").val();
             var params = {
                 'action': 'update_messages',
-                'values': {user_id: user_id},
+                'values': {user_id: user_id, campaign_id: campaign_id},
                 'callback': function (msg) {
                     ajax_respond(msg,
                         function (respond) { //success
@@ -182,6 +191,7 @@
         }, 5000);
         $("#form").submit(function(e) {
             e.preventDefault();
+            var campaign_id = $("#campaign_id").val();
             var message = get_from_form('#form');
             var reload = false;
             if($('[name="user_id"]').val() == message['msisdn']) {
@@ -228,7 +238,7 @@
                             var user_id = $("#user_id").val();
                             var params = {
                                 'action': 'update_messages',
-                                'values': {user_id: user_id},
+                                'values': {user_id: user_id, campaign_id: campaign_id},
                                 'callback': function (msg) {
                                     ajax_respond(msg,
                                         function (respond) { //success
@@ -264,7 +274,7 @@
                         var user_id = $("#user_id").val();
                         var params = {
                             'action': 'update_messages',
-                            'values': {user_id: user_id},
+                            'values': {user_id: user_id,  campaign_id: campaign_id},
                             'callback': function (msg) {
                                 ajax_respond(msg,
                                     function (respond) { //success

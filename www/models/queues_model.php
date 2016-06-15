@@ -30,7 +30,7 @@ class queues_model extends model
         return $this->get_all($stm, array('user_id' => $user_id));
     }
 
-    public function getToKeepAlive($delay)
+    public function getToKeepAlive($delay, $campaign_id)
     {
         $stm = $this->pdo->prepare('
             SELECT
@@ -39,17 +39,19 @@ class queues_model extends model
                 queues q
             WHERE
                 sent = 1
+                  AND campaign_id = :campaign_id
                     AND send_time < NOW() - INTERVAL :delay SECOND
                     AND q.send_time > (SELECT
                         send_time
                     FROM
                         queues q1
                     WHERE q1.user_id = q.user_id
+                    AND campaign_id = :campaign_id
                     ORDER BY send_time DESC
                     LIMIT 1 , 1)
         ');
         $res = [];
-        $tmp = $this->get_all($stm, ['delay' => $delay]);
+        $tmp = $this->get_all($stm, ['delay' => $delay, 'campaign_id' => $campaign_id]);
         foreach ($tmp as $v) {
             $res[$v['user_id']] = $v;
         }
@@ -57,7 +59,7 @@ class queues_model extends model
         return $res;
     }
 
-    public function getForGlobals()
+    public function getForGlobals($campaign_id)
     {
         $stm = $this->pdo->prepare('
             SELECT
@@ -66,6 +68,7 @@ class queues_model extends model
                 queues q
             WHERE
                 sent = 1
+                    AND campaign_id = :campaign_id
                     AND send_time < NOW() - INTERVAL ' . GLOBAL_DELAY . ' SECOND
                     AND q.global_plot = 0
                     AND q.send_time > (SELECT
@@ -73,10 +76,10 @@ class queues_model extends model
                     FROM
                         queues q1
                     WHERE
-                        q1.user_id = q.user_id
+                        q1.user_id = q.user_id AND campaign_id = :campaign_id
                     ORDER BY send_time DESC
                     LIMIT 1 , 1)
         ');
-        return $this->get_all($stm);
+        return $this->get_all($stm, ['campaign_id' => $campaign_id]);
     }
 }
