@@ -15,11 +15,11 @@ require_once('config.php');
 require_once(CORE_DIR . 'registry.php');
 require_once(CORE_DIR . 'autoload.php');
 $cron = new cron_class();
-for($i = 0; $i < 1; $i++) {
+//for($i = 0; $i < 1; $i++) {
     $cron->init();
     $cron->checkQueue();
     $cron->checkGlobals();
-}
+//}
 $mtime = microtime();
 $mtime = explode(" ",$mtime);
 $mtime = $mtime[1] + $mtime[0];
