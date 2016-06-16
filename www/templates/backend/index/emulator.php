@@ -188,7 +188,7 @@
                 }
             };
             ajax(params);
-        }, 5000);
+        }, 30000);
         $("#form").submit(function(e) {
             e.preventDefault();
             var campaign_id = $("#campaign_id").val();
