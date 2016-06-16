@@ -278,11 +278,12 @@ class cron_class extends base
 
     public function checkGlobals()
     {
+        $today_users = $this->model('queues')->getTodayUsers();
         /*
          * Global plots
          */
         foreach ($this->model('campaigns')->getAll() as $campaign) {
-            $to_keep = $this->model('queues')->getForGlobals($campaign['id']);
+            $to_keep = $this->model('queues')->getForGlobals($campaign['id'], $today_users[$campaign['id']]);
             $globals = $this->model('phrases')->getByFields(['status_id' => 9, 'campaign_id' => $campaign['id']], true, 'sort_order');
             foreach ($to_keep as $user_to_keep) {
                 $user_phrases = $this->model('phrases')->getLastUserPhrases($user_to_keep['user_id'], $campaign['id']);
@@ -316,7 +317,7 @@ class cron_class extends base
              */
             $keeps = $this->model('phrases')->getByField('status_id', 10, true);
             foreach ($keeps as $keep) {
-                $to_keep = $this->model('queues')->getToKeepAlive($keep['delay'], $campaign['id']);
+                $to_keep = $this->model('queues')->getToKeepAlive($keep['delay'], $campaign['id'], $today_users[$campaign['id']]);
                 foreach ($to_keep as $user_to_keep) {
                     $user_phrases = $this->model('phrases')->getLastUserPhrases($user_to_keep['user_id'], $campaign['id']);
                     $stop = false;

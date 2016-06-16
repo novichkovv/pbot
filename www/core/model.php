@@ -19,13 +19,32 @@ class model extends base
     /**
      * @param PDOStatement $stm
      * @param array $data
+     */
+
+    public function execute(PDOStatement $stm, array $data = array())
+    {
+
+        $count = registry::get('count');
+        if(!$count) {
+            $count = 0;
+        }
+        $count ++;
+        registry::remove('count');
+        registry::set('count', $count);
+        ($data ? $stm->execute($data) : $stm->execute());
+    }
+
+    /**
+     * @param PDOStatement $stm
+     * @param array $data
      * @param bool $assoc
      * @return array
      */
 
     protected function get_all(PDOStatement $stm, array $data = array(), $assoc = true)
     {
-        ($data ? $stm->execute($data) : $stm->execute());
+        $this->execute($stm, $data);
+//        ($this->execute($stm, $data); //        ($data ? $this->execute($stm, $data) : $this->execute($stm)););
         if($assoc) {
             $stm->setFetchMode(PDO::FETCH_ASSOC);
         } else {
@@ -46,7 +65,8 @@ class model extends base
 
     protected function get_row(PDOStatement $stm, array  $data = array())
     {
-        $data ? $stm->execute($data) : $stm->execute();
+//        $this->execute($stm, $data); //        ($data ? $this->execute($stm, $data) : $this->execute($stm));;
+        $this->execute($stm, $data);
         $stm->setFetchMode(PDO::FETCH_ASSOC);
         return $stm->fetch();
     }
@@ -116,7 +136,7 @@ class model extends base
         } elseif($show == 2) {
             $this->writeLog('MYSQL', $stm->getQuery($row));
         }
-        $stm->execute($row);
+        $this->execute($stm, $row); 
 
         if(!empty($id))return $id;
         return $this->pdo->lastInsertId();
@@ -155,7 +175,7 @@ class model extends base
         } elseif($show == 2) {
             $this->writeLog('MYSQL', $stm->getQuery($vals));
         }
-        return $stm->execute($vals);
+        return $this->execute($stm, $vals); 
     }
 
     /**
@@ -263,7 +283,7 @@ class model extends base
         DELETE FROM ' . $this->table . ' WHERE id = :id
         ');
         if($show)echo $stm->queryString;
-        if($stm->execute(array('id'=>$id)))
+        if($this->execute($stm, array('id'=>$id)))
             return true;
         else
             return false;
@@ -282,7 +302,7 @@ class model extends base
         DELETE FROM ' . $this->table . ' WHERE ' . $field . ' = :' . $field . '
         ');
         if($show)echo $stm->queryString;
-        if($stm->execute(array($field => $value)))
+        if($this->execute($stm, array($field => $value)))
             return true;
         else
             return false;
@@ -299,7 +319,7 @@ class model extends base
         DELETE FROM ' . $this->table . '
         ');
         if($show)echo $stm->queryString;
-        if($stm->execute())
+        if($this->execute($stm))
             return true;
         else
             return false;
@@ -327,7 +347,7 @@ class model extends base
         if($show == 2) {
             $this->writeLog('MYSQL', $stm->getQuery($fields));
         }
-        return $stm->execute($fields);
+        return $this->execute($stm, $fields);
     }
 
     /**
@@ -384,7 +404,7 @@ class model extends base
             $stm = $this->pdo->prepare('INSERT INTO reports_options SET option_key = :option_key, option_value = :option_value');
         }
         $row = array('option_key' => $key, 'option_value' => $value);
-        $stm->execute($row);
+        $this->execute($stm, $row); 
     }
 
     public function getOption($key)
@@ -429,7 +449,7 @@ class model extends base
         else $stm = $this->pdo->prepare(
             'INSERT INTO ' . $this->table . ' (' . implode(', ', $rows) . ') VALUES ( ' . implode(', ', $names) . ')'
         );
-        $stm->execute($row);
+        $this->execute($stm, $row); 
         if($show)echo $stm->getQuery($row);
         if(!empty($id))return $id;
         return $this->pdo->lastInsertId();
