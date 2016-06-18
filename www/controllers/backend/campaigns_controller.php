@@ -26,21 +26,40 @@ class campaigns_controller extends controller
     public function add()
     {
         if(isset($_POST['save_campaign_btn'])) {
-            $row = [];
+            $campaign = [];
             if($_GET['id']) {
-                $row['id'] = $_GET['id'];
+                $campaign['id'] = $_GET['id'];
             } else {
-                $row['create_date'] = date('Y-m-d H:i:s');
-                $row['system_user_id'] = registry::get('user')['id'];
+                $campaign['create_date'] = date('Y-m-d H:i:s');
+                $campaign['system_user_id'] = registry::get('user')['id'];
             }
-            $row['campaign_name'] = $_POST['campaign_name'];
-            $row['phone'] = $_POST['phone'];
-            $this->model('campaigns')->insert($row);
+            $campaign['campaign_name'] = $_POST['campaign_name'];
+            $campaign['phone'] = $_POST['phone'];
+            $campaign['id'] = $this->model('campaigns')->insert($campaign);
+            $row = [];
+            $row['campaign_id'] = $campaign['id'];
+            $this->model('virtual_numbers')->delete('campaign_id', $campaign['id']);
+            if($_POST['phones']) {
+                foreach ($_POST['phones'] as $phone) {
+                    if(!$phone) {
+                        continue;
+                    }
+                    if ($id = $this->model('virtual_numbers')->getByField('phone', $phone)) {
+                        $row['id'] = $id['id'];
+                    } else {
+                        $row['create_date'] = date('Y-m-d H:i:s');
+                    }
+                    $row['phone'] = $phone;
+                    $this->model('virtual_numbers')->insert($row);
+                }
+            }
+
             header("Location: " . SITE_DIR . "campaigns/");
             exit;
         }
         if($_GET['id']) {
             $this->render('campaign', $this->model('campaigns')->getById($_GET['id']));
+            $this->render('phones', $this->model('virtual_numbers')->getByField('campaign_id', $_GET['id'], true));
         }
         $this->view('campaigns' . DS . 'add');
     }

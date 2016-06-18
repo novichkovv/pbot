@@ -77,11 +77,11 @@ class cron_class extends base
 
     private function manageMessage($message)
     {
-        if($this->model('queues')->getByFields(['user_id' => $message['user_id'], 'sent' => 0, 'campaign_id' => $message['campaign_id']])) {
-            $this->model('messages')->markOtherMessages($message['user_id'], $message['campaign_id']);
+        if($this->model('queues')->getByFields(['user_id' => $message['user_id'], 'sent' => 0, 'campaign_id' => $message['campaign_id'], 'recipient' => $message['recipient']])) {
+            $this->model('messages')->markOtherMessages($message['user_id'], $message['campaign_id'], $message['recipient']);
             return;
         }
-        $user_phrases = $this->model('phrases')->getLastUserPhrases($message['user_id'], $message['campaign_id']);
+        $user_phrases = $this->model('phrases')->getLastUserPhrases($message['user_id'], $message['campaign_id'], $message['recipient']);
         $phrases = $this->model('phrases')->getByField('campaign_id', $message['campaign_id'], true, 'sort_order');
         $highest_wt = [];
         $macro = [];
@@ -131,7 +131,7 @@ class cron_class extends base
         if(!$user_phrases && isset($welcome)) {
             $sms = $welcome['reply'];
             $delay = $welcome['delay'];
-            $this->model('user_phrases')->insert(['user_id' => $message['user_id'], 'phrase_id' => $welcome['id'], 'create_date' => date('Y-m-d H:i:s')]);
+            $this->model('user_phrases')->insert(['user_id' => $message['user_id'], 'phrase_id' => $welcome['id'], 'create_date' => date('Y-m-d H:i:s'), 'virtual_number' => $message['recipient']]);
         }
         if(!$sms) {
             foreach ($highest_wt as $v) {
@@ -139,7 +139,7 @@ class cron_class extends base
                     $sms = $v['reply'];
                     $delay = $v['delay'];
                     $match_word = $matches[0];
-                    $this->model('user_phrases')->insert(['user_id' => $message['user_id'], 'phrase_id' => $v['id'], 'create_date' => date('Y-m-d H:i:s')]);
+                    $this->model('user_phrases')->insert(['user_id' => $message['user_id'], 'phrase_id' => $v['id'], 'create_date' => date('Y-m-d H:i:s'), 'virtual_number' => $message['recipient']]);
                     break;
                 }
             }
@@ -150,7 +150,7 @@ class cron_class extends base
                     $match_word = $matches[0];
                     $sms = $v['reply'];
                     $delay = $v['delay'];
-                    $this->model('user_phrases')->insert(['user_id' => $message['user_id'], 'phrase_id' => $v['id'], 'create_date' => date('Y-m-d H:i:s')]);
+                    $this->model('user_phrases')->insert(['user_id' => $message['user_id'], 'phrase_id' => $v['id'], 'create_date' => date('Y-m-d H:i:s'), 'virtual_number' => $message['recipient']]);
                     break;
                 }
             }
@@ -163,7 +163,7 @@ class cron_class extends base
                 $sms = $v['reply'];
                 $delay = $v['delay'];
                 $global = true;
-                $this->model('user_phrases')->insert(['user_id' => $message['user_id'], 'phrase_id' => $v['id'], 'create_date' => date('Y-m-d H:i:s')]);
+                $this->model('user_phrases')->insert(['user_id' => $message['user_id'], 'phrase_id' => $v['id'], 'create_date' => date('Y-m-d H:i:s'), 'virtual_number' => $message['recipient']]);
                 break;
             }
         }
@@ -176,7 +176,7 @@ class cron_class extends base
                     $match_word = $matches[0];
                     $sms = $v['reply'];
                     $delay = $v['delay'];
-                    $this->model('user_phrases')->insert(['user_id' => $message['user_id'], 'phrase_id' => $v['id'], 'create_date' => date('Y-m-d H:i:s')]);
+                    $this->model('user_phrases')->insert(['user_id' => $message['user_id'], 'phrase_id' => $v['id'], 'create_date' => date('Y-m-d H:i:s'), 'virtual_number' => $message['recipient']]);
                     break;
                 }
             }
@@ -190,7 +190,7 @@ class cron_class extends base
                     $sms = $v['reply'];
                     $delay = $v['delay'];
                     $match_word = $matches[0];
-                    $this->model('user_phrases')->insert(['user_id' => $message['user_id'], 'phrase_id' => $v['id'], 'create_date' => date('Y-m-d H:i:s')]);
+                    $this->model('user_phrases')->insert(['user_id' => $message['user_id'], 'phrase_id' => $v['id'], 'create_date' => date('Y-m-d H:i:s'), 'virtual_number' => $message['recipient']]);
                     break;
                 }
             }
@@ -202,7 +202,7 @@ class cron_class extends base
                 }
                 $sms = $v['reply'];
                 $delay = $v['delay'];
-                $this->model('user_phrases')->insert(['user_id' => $message['user_id'], 'phrase_id' => $v['id'], 'create_date' => date('Y-m-d H:i:s')]);
+                $this->model('user_phrases')->insert(['user_id' => $message['user_id'], 'phrase_id' => $v['id'], 'create_date' => date('Y-m-d H:i:s'), 'virtual_number' => $message['recipient']]);
                 break;
             }
         }
@@ -237,7 +237,7 @@ class cron_class extends base
         $this->putInQueue($res);
     }
 
-    private function putInQueue(array $message)
+    public function putInQueue(array $message)
     {
         if($message['sms']) {
             if ($message['message_id']) {
@@ -286,7 +286,7 @@ class cron_class extends base
             $to_keep = $this->model('queues')->getForGlobals($campaign['id'], $today_users[$campaign['id']]);
             $globals = $this->model('phrases')->getByFields(['status_id' => 9, 'campaign_id' => $campaign['id']], true, 'sort_order');
             foreach ($to_keep as $user_to_keep) {
-                $user_phrases = $this->model('phrases')->getLastUserPhrases($user_to_keep['user_id'], $campaign['id']);
+                $user_phrases = $this->model('phrases')->getLastUserPhrases($user_to_keep['user_id'], $campaign['id'], $user_to_keep['recipient']);
                 foreach ($globals as $global) {
                     if($user_phrases[9][$global['id']]) {
                         continue;
@@ -306,7 +306,7 @@ class cron_class extends base
                         'global_plot' => 1,
                         'campaign_id' => $campaign['id']
                     );
-                    $this->model('user_phrases')->insert(['user_id' => $user_to_keep['user_id'], 'phrase_id' => $global['id'], 'create_date' => date('Y-m-d H:i:s')]);
+                    $this->model('user_phrases')->insert(['user_id' => $user_to_keep['user_id'], 'phrase_id' => $global['id'], 'create_date' => date('Y-m-d H:i:s'), 'virtual_number' => $user_to_keep['recipient']]);
                     $this->putInQueue($res);
                     break;
                 }
@@ -319,7 +319,7 @@ class cron_class extends base
             foreach ($keeps as $keep) {
                 $to_keep = $this->model('queues')->getToKeepAlive($keep['delay'], $campaign['id'], $today_users[$campaign['id']]);
                 foreach ($to_keep as $user_to_keep) {
-                    $user_phrases = $this->model('phrases')->getLastUserPhrases($user_to_keep['user_id'], $campaign['id']);
+                    $user_phrases = $this->model('phrases')->getLastUserPhrases($user_to_keep['user_id'], $campaign['id'], $user_to_keep['recipient']);
                     $stop = false;
                     if($user_phrases[10]) {
                         foreach ($user_phrases[10] as $kept) {
@@ -346,7 +346,7 @@ class cron_class extends base
                         'global_plot' => 1,
                         'campaign_id' => $campaign['id']
                     );
-                    $this->model('user_phrases')->insert(['user_id' => $user_to_keep['user_id'], 'phrase_id' => $keep['id'], 'create_date' => date('Y-m-d H:i:s')]);
+                    $this->model('user_phrases')->insert(['user_id' => $user_to_keep['user_id'], 'phrase_id' => $keep['id'], 'create_date' => date('Y-m-d H:i:s'), 'virtual_number' => $user_to_keep['recipient']]);
                     $this->putInQueue($res);
                 }
             }

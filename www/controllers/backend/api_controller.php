@@ -21,7 +21,8 @@ class api_controller extends controller
             $user['create_date'] = date('Y-m-d H:i:s');
             $user['id'] = $this->model('users')->insert($user);
         }
-        $active_campaign = $this->model('campaigns')->getByField('phone', $request['to']);
+        $id = $this->model('virtual_numbers')->getByField('phone', $request['to'])['campaign_id'];
+        $active_campaign = $this->model('campaigns')->getById($id);
         $row['user_id'] = $user['id'];
         $row['message_id'] = $request['messageId'];
         $row['recipient'] = $request['to'];

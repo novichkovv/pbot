@@ -98,3 +98,12 @@ ALTER TABLE messages ADD campaign_id BIGINT UNSIGNED NOT NULL AFTER id;
 ALTER TABLE campaigns ADD phone VARCHAR(255) NOT NULL DEFAULT 0 AFTER id;
 ALTER TABLE user_phrases ADD campaign_id BIGINT UNSIGNED NOT NULL DEFAULT 0 AFTER id;
 
+create index user_id on queues (user_id);
+
+CREATE TABLE virtual_numbers (
+  id SERIAL PRIMARY KEY,
+  campaign_id BIGINT UNSIGNED NOT NULL,
+  phone VARCHAR (255) NOT NULL,
+  create_date DATETIME NOT NULL
+);
+ALTER TABLE user_phrases CHANGE campaign_id virtual_number VARCHAR(255) NOT NULL;

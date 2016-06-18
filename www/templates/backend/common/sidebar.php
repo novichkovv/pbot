@@ -8,13 +8,6 @@
                     <span class="selected"></span>
                 </a>
             </li>
-            <li class="start <?php if(registry::get('route_parts')[0] == 'system_users') echo 'active'; ?>">
-                <a href="<?php echo SITE_DIR; ?>system_users/">
-                    <i class="icon-users"></i>
-                    <span class="title">System Users</span>
-                    <span class="selected"></span>
-                </a>
-            </li>
             <li class="start <?php if(registry::get('route_parts')[0] == 'emulator') echo 'active'; ?>">
                 <a href="<?php echo SITE_DIR; ?>emulator/">
                     <i class="icon-bubbles"></i>
@@ -26,6 +19,20 @@
                 <a href="<?php echo SITE_DIR; ?>campaigns/">
                     <i class="icon-docs"></i>
                     <span class="title">Campaigns</span>
+                    <span class="selected"></span>
+                </a>
+            </li>
+<!--            <li class="start --><?php //if(registry::get('route_parts')[0] == 'users') echo 'active'; ?><!--">-->
+<!--                <a href="--><?php //echo SITE_DIR; ?><!--users/">-->
+<!--                    <i class="icon-users"></i>-->
+<!--                    <span class="title">Users</span>-->
+<!--                    <span class="selected"></span>-->
+<!--                </a>-->
+<!--            </li>-->
+            <li class="start <?php if(registry::get('route_parts')[0] == 'system_users') echo 'active'; ?>">
+                <a href="<?php echo SITE_DIR; ?>system_users/">
+                    <i class="icon-settings"></i>
+                    <span class="title">Options</span>
                     <span class="selected"></span>
                 </a>
             </li>

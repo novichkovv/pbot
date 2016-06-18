@@ -1,4 +1,4 @@
-<h3 class="page-title"> Users
+<h3 class="page-title"> System Users
     <small></small>
 </h3>
 <div class="row">

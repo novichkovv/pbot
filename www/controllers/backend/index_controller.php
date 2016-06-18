@@ -31,7 +31,7 @@ class index_controller extends controller
         if(isset($_SESSION['campaign'])) {
             $this->render('phrases', $this->model('phrases')->getPhrases($_SESSION['campaign']));
         } elseif($campaigns) {
-            $this->render('phrases', $this->model('phrases')->getPhrases($campaigns[0]));
+            $this->render('phrases', $this->model('phrases')->getPhrases($campaigns[0]['id']));
             $_SESSION['campaign'] = $campaigns[0]['id'];
         } else {
             $this->render('no_campaigns', true);

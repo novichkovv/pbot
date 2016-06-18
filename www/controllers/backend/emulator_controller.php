@@ -13,11 +13,6 @@ class emulator_controller extends controller
             array('name' => 'Home', 'route' => SITE_DIR),
             array('name' => 'Messenger')
         ));
-        $this->render('users', $this->model('users')->getAll());
-        $user = $this->model('users')->getById(1);
-        if($_GET['user_id']) {
-            $user = $this->model('users')->getById($_GET['user_id']);
-        }
 
         $campaigns = $this->model('campaigns')->getAll();
         $this->render('campaigns', $campaigns);
@@ -26,11 +21,38 @@ class emulator_controller extends controller
                 $campaign = $this->model('campaigns')->getById($_SESSION['campaign']);
             } else {
                 $campaign = $campaigns[0];
+                $_SESSION['campaign'] = $campaigns[0]['id'];
             }
         } else {
             $campaign = $this->model('campaigns')->getById($_GET['campaign']);
+            $_SESSION['campaign'] = $campaign['id'];
         }
-        $this->getMessages($user, $campaign);
+        $this->render('campaign', $campaign);
+
+        $phones = $this->model('virtual_numbers')->getByField('campaign_id', $campaign['id'], true);
+        $this->render('phones', $phones);
+        $number_id = false;
+        if($_GET['number_id']) {
+            foreach ($phones as $phone) {
+                if($_GET['number_id'] == $phone['phone']) {
+                    $number_id = $phone['phone'];
+                }
+            }
+        }
+        if(!$number_id) {
+            $number_id = $phones[0]['phone'];
+        }
+        $this->render('number_id', $number_id);
+        $users = $this->model('users')->getAll();
+        $this->render('users', $users);
+        if($_GET['user_id']) {
+            $user = $this->model('users')->getById($_GET['user_id']);
+        } else {
+            $user = $users[0];
+        }
+        $latest = $this->getLatest();
+        $this->render('latest', $latest);
+        $this->getMessages($user, $campaign, $number_id);
         $this->render('user', $user);
         $this->render('current_campaign', $campaign);
         $this->view('index' . DS . 'emulator');
@@ -39,10 +61,48 @@ class emulator_controller extends controller
     public function index_ajax()
     {
         switch ($_REQUEST['action']) {
+            case "prevent_override":
+                foreach ($this->model('queues')->getByFields([
+                    'user_id' => $_POST['user_id'],
+                    'campaign_id' => $_POST['campaign_id'],
+                    'recipient' => $_POST['recipient'],
+                    'sent' => 0
+                ], true) as $queue) {
+                    $queue['sent'] = 2;
+                    $this->model('queues')->insert($queue);
+                    if($queue['message_id']) {
+                        $row = [];
+                        $row['id'] = $queue['message_id'];
+                        $row['message_status'] = 2;
+                        $this->model('messages')->insert($row);
+                    }
+                }
+                exit;
+                break;
+
+            case "override":
+                $message = $_POST['override'];
+                $user = $this->model('users')->getById($message['user_id']);
+                $message['phone'] = $user['phone'];
+                $message['send_time'] = date('Y-m-d H:i:s');
+                $message['global_plot'] = 1;
+                $cron = new cron_class();
+                $cron->putInQueue($message);
+                exit;
+                break;
+
+            case "update_last_message":
+                $latest = $this->getLatest();
+                $this->render('latest', $latest);
+                $template = $this->fetch('index' . DS . 'ajax' . DS . 'last_message');
+                echo json_encode(array('status' => 1, 'template' => $template));
+                exit;
+                break;
+
             case "update_messages":
                 $user = $this->model('users')->getById($_POST['user_id']);
                 $campaign = $this->model('campaigns')->getById($_POST['campaign_id']);
-                $this->getMessages($user, $campaign);
+                $this->getMessages($user, $campaign, $_POST['phone']);
                 $template = $this->fetch('index' . DS . 'ajax' . DS . 'chats');
                 echo json_encode(array('status' => 1, 'template' => $template, 'time' => date('Y-m-d H:i:s')));
                 require_once(ROOT_DIR . 'cron.php');
@@ -50,21 +110,51 @@ class emulator_controller extends controller
                 break;
 
             case "clear_chat":
-                if(empty($_POST['user_id'])) {
-                    exit;
-                }
-                $this->model('user_phrases')->delete('user_id', $_POST['user_id']);
-                $this->model('messages')->delete('user_id', $_POST['user_id']);
-                $this->model('queues')->delete('user_id', $_POST['user_id']);
+                $this->model('messages')->deleteByFields([
+                    'user_id' => $_POST['user_id'],
+                    'recipient' => $_POST['number'],
+                    'campaign_id' => $_POST['campaign_id']
+                ]);
+                $this->model('queues')->deleteByFields([
+                    'user_id' => $_POST['user_id'],
+                    'recipient' => $_POST['number'],
+                    'campaign_id' => $_POST['campaign_id']
+                ]);
+                $this->model('user_phrases')->deleteByFields([
+                    'user_id' => $_POST['user_id'],
+                    'virtual_number' => $_POST['number']
+                ]);
                 exit;
                 break;
         }
     }
 
-    private function getMessages($user, $campaign)
+    private function getLatest()
     {
-        $tmp = $this->model('messages')->getByFields(['user_id' => $user['id'], 'campaign_id' => $campaign['id']], true, 'push_date DESC', 100);
-        $outcoming = $this->model('queues')->getByFields(array('user_id' => $user['id'], 'sent' => 1,  'campaign_id' => $campaign['id']), true, 'send_time DESC', 6);
+        $latest = $this->model('messages')->getLatestMessage();
+        $sms = $latest['content'];
+        if($latest['concat']) {
+            $sms = '';
+            foreach ($this->model('messages')->getByField('concat', $latest['concat'], true, 'concat_count') as $message) {
+                $sms .= $message['content'];
+            }
+        }
+        $latest['content'] = $sms;
+        return $latest;
+    }
+
+    private function getMessages($user, $campaign, $number_id)
+    {
+//        echo $user['id']."\n";
+//        echo $campaign['id']."\n";
+//        echo $number_id;
+//        exit;
+//        print_r($user);
+//        print_r($campaign);
+//        echo $number_id;
+//        exit;
+        $tmp = $this->model('messages')->getByFields(['user_id' => $user['id'], 'campaign_id' => $campaign['id'], 'recipient' => $number_id], true, 'push_date DESC', 100);
+        $outcoming = $this->model('queues')->getByFields(array('user_id' => $user['id'], 'sent' => 1,  'campaign_id' => $campaign['id'], 'recipient' => $number_id), true, 'send_time DESC', 6);
         $messages = [];
         $incoming = [];
         $concat = [];

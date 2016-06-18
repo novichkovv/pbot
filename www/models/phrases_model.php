@@ -33,7 +33,7 @@ class phrases_model extends model
         return $stm->execute();
     }
 
-    public function getLastUserPhrases($user_id, $campaign_id)
+    public function getLastUserPhrases($user_id, $campaign_id, $virtual_number)
     {
         $stm = $this->pdo->prepare('
             SELECT
@@ -48,9 +48,11 @@ class phrases_model extends model
                     AND
                 p.campaign_id = :campaign_id
                     AND
+                up.virtual_number = :virtual_number
+                    AND
                 NOW() - INTERVAL 1 DAY < up.create_date
         ');
-        $tmp = $this->get_all($stm, array('user_id' => $user_id, 'campaign_id' => $campaign_id));
+        $tmp = $this->get_all($stm, array('user_id' => $user_id, 'campaign_id' => $campaign_id, 'virtual_number' => $virtual_number));
         $res = [];
         foreach ($tmp as $v) {
             $res[$v['status_id']][$v['id']] = $v;
