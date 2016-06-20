@@ -48,7 +48,7 @@ class tools_class
 
     public function excel()
     {
-        require_once(LIBS_DIR . 'PHPexcel' . DS . 'PHPExcel.php');
+        require_once(LIBS_DIR . 'PHPExcel' . DS . 'PHPExcel.php');
         if($this->excel === null) {
             $excel = new PHPExcel();
             $this->excel = $excel;
