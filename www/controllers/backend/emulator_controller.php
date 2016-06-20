@@ -43,7 +43,7 @@ class emulator_controller extends controller
             $number_id = $phones[0]['phone'];
         }
         $this->render('number_id', $number_id);
-        $users = $this->model('users')->getAll();
+        $users = $this->model('messages')->getNumberUsers($number_id);
         $this->render('users', $users);
         if($_GET['user_id']) {
             $user = $this->model('users')->getById($_GET['user_id']);

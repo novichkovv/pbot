@@ -53,4 +53,21 @@ class messages_model extends model
         ');
         return $this->get_row($stm);
     }
+
+    public function getNumberUsers($number)
+    {
+        $stm = $this->pdo->prepare('
+            SELECT
+                u.*
+            FROM
+                users u
+                    JOIN
+                messages m ON m.user_id = u.id
+            WHERE
+                recipient = :number
+            GROUP BY user_id;
+        ');
+        $stm->getQuery(['number' => $number]);
+        return $this->get_all($stm, array('number' => $number));
+    }
 }
