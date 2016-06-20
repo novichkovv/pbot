@@ -34,7 +34,7 @@ class campaigns_controller extends controller
                 $campaign['system_user_id'] = registry::get('user')['id'];
             }
             $campaign['campaign_name'] = $_POST['campaign_name'];
-            $campaign['phone'] = $_POST['phone'];
+//            $campaign['phone'] = '';
             $campaign['id'] = $this->model('campaigns')->insert($campaign);
             $row = [];
             $row['campaign_id'] = $campaign['id'];

@@ -8,6 +8,7 @@
 class base
 {
     private $api_instance;
+    private $tools_instance;
 
     /**
      * @param $model
@@ -96,5 +97,13 @@ class base
             $this->api_instance = new api_class();
         }
         return $this->api_instance;
+    }
+
+    public function tools()
+    {
+        if(!$this->tools_instance) {
+            $this->tools_instance = new tools_class();
+        }
+        return $this->tools_instance;
     }
 }

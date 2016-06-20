@@ -27,6 +27,18 @@ class index_controller extends controller
             header('Location: ' . SITE_DIR);
         }
 
+        if(isset($_POST['clone_btn'])) {
+            $rows = [];
+            foreach ($this->model('phrases')->getByField('campaign_id', $_POST['clone_campaign_id'], true) as $phrase) {
+                unset($phrase['id']);
+                $phrase['create_date'] = date('Y-m-d H:i:s');
+                $phrase['campaign_id'] = $_SESSION['campaign'];
+                $rows[] = $phrase;
+            }
+            $this->model('phrases')->insertRows($rows);
+            header('Location: ' . SITE_DIR);
+        }
+
         $campaigns = $this->model('campaigns')->getByField('system_user_id', registry::get('user')['id'], true);
         if(isset($_SESSION['campaign'])) {
             $this->render('phrases', $this->model('phrases')->getPhrases($_SESSION['campaign']));

@@ -22,13 +22,13 @@
                     <span class="selected"></span>
                 </a>
             </li>
-<!--            <li class="start --><?php //if(registry::get('route_parts')[0] == 'users') echo 'active'; ?><!--">-->
-<!--                <a href="--><?php //echo SITE_DIR; ?><!--users/">-->
-<!--                    <i class="icon-users"></i>-->
-<!--                    <span class="title">Users</span>-->
-<!--                    <span class="selected"></span>-->
-<!--                </a>-->
-<!--            </li>-->
+            <li class="start <?php if(registry::get('route_parts')[0] == 'users') echo 'active'; ?>">
+                <a href="<?php echo SITE_DIR; ?>users/">
+                    <i class="icon-users"></i>
+                    <span class="title">Users</span>
+                    <span class="selected"></span>
+                </a>
+            </li>
             <li class="start <?php if(registry::get('route_parts')[0] == 'system_users') echo 'active'; ?>">
                 <a href="<?php echo SITE_DIR; ?>system_users/">
                     <i class="icon-settings"></i>

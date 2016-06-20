@@ -278,7 +278,9 @@ function ajax_datatable(id, display_records, options)
         oTable.fnFilter();
     });
 
-    $(".range-input-1, .range-input-2").datepicker();
+    $(".range-input-1, .range-input-2").datepicker({
+        format: 'yyyy-mm-dd'
+    });
 
     $('#' + id + ' .filter-range, .filter-range[data-id="' + id + '"]').change(function() {
         var $cont = $(this).closest('.date-range');

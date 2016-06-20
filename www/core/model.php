@@ -31,7 +31,8 @@ class model extends base
         $count ++;
         registry::remove('count');
         registry::set('count', $count);
-        ($data ? $stm->execute($data) : $stm->execute());
+        $res = ($data ? $stm->execute($data) : $stm->execute());
+        return $res;
     }
 
     /**
@@ -175,7 +176,7 @@ class model extends base
         } elseif($show == 2) {
             $this->writeLog('MYSQL', $stm->getQuery($vals));
         }
-        return $this->execute($stm, $vals); 
+        return $this->execute($stm, $vals);
     }
 
     /**

@@ -7,6 +7,8 @@
  */
 class tools_class
 {
+    private $excel;
+
     public static  $months_rus = array(
         '01' => 'Январь',
         '02' => 'Февраль',
@@ -42,6 +44,18 @@ class tools_class
         $mail->Subject = $subject;
         $mail->MsgHTML($message);
         return $mail->Send();
+    }
+
+    public function excel()
+    {
+        require_once(LIBS_DIR . 'PHPexcel' . DS . 'PHPExcel.php');
+        if($this->excel === null) {
+            $excel = new PHPExcel();
+            $this->excel = $excel;
+            return $excel;
+        } else {
+            return $this->excel;
+        }
     }
 
     public static function formatTime($seconds)

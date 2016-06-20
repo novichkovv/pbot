@@ -50,7 +50,7 @@ class phrases_model extends model
                     AND
                 up.virtual_number = :virtual_number
                     AND
-                NOW() - INTERVAL 1 DAY < up.create_date
+                NOW() - INTERVAL 3 DAY < up.create_date
         ');
         $tmp = $this->get_all($stm, array('user_id' => $user_id, 'campaign_id' => $campaign_id, 'virtual_number' => $virtual_number));
         $res = [];

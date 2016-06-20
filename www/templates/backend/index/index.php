@@ -19,6 +19,9 @@
                 </select>
             </form>
         </div>
+<!--        <div class="col-md-3">-->
+<!--            <a href="#clone_modal" data-toggle="modal" class="btn btn-outline green">Clone Phrases</a>-->
+<!--        </div>-->
     </div>
     <br>
     <div class="row">
@@ -82,6 +85,38 @@
                     <div class="modal-footer">
                         <input type="hidden" name="phrases_to_delete" value="">
                         <button type="submit" class="btn btn-primary" name="delete_phrase_btn">Yes</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="clone_modal">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <form method="post" action="">
+
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title">Clone Phrases from a Campaign</h4>
+                    </div>
+                    <div class="modal-body with-padding">
+                        <div class="form-group">
+                            <label>Select Campaign</label>
+                            <select class="form-control" name="clone_campaign_id">
+                                <?php if ($campaigns): ?>
+                                    <?php foreach ($campaigns as $campaign): ?>
+                                        <?php if ($campaign['id'] == $_SESSION['campaign']) continue; ?>
+                                        <option value="<?php echo $campaign['id']; ?>">
+                                            <?php echo $campaign['campaign_name']; ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" name="clone_btn" class="btn btn-primary">Clone</button>
                         <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
                     </div>
                 </form>

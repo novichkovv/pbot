@@ -118,29 +118,29 @@
         </div>
     </div>
     <div class="col-md-6">
-<!--        <div class="portlet light bordered">-->
-<!--            <div class="portlet-title">-->
-<!--                <div class="caption caption-md">-->
-<!--                    <i class="icon-bar-chart theme-font hide"></i>-->
-<!--                    <span class="caption-subject font-blue-madison bold uppercase">Latest Incoming Message</span>-->
-<!--                </div>-->
-<!--                <div class="actions">-->
-<!--                    <a href="--><?php //echo SITE_DIR; ?><!--emulator/?campaign=--><?php //echo $latest['campaign_id']; ?><!--&user_id=--><?php //echo $latest['user_id']; ?><!--&number_id=--><?php //echo $latest['recipient']; ?><!--#override"-->
-<!--                       class="btn blue btn-outline">-->
-<!--                        <i class="fa fa-pencil"></i> Override-->
-<!--                    </a>-->
-<!--                    <a href="--><?php //echo SITE_DIR; ?><!--emulator/?campaign=--><?php //echo $latest['campaign_id']; ?><!--&user_id=--><?php //echo $latest['user_id']; ?><!--&number_id=--><?php //echo $latest['recipient']; ?><!--"-->
-<!--                       class="btn btn-outline green">-->
-<!--                        <i class="fa fa-link"></i> Go to Chat-->
-<!--                    </a>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--            <div class="portlet-body">-->
-<!--                <div class="general-item-list" id="last_container">-->
-<!--                    --><?php //require_once(TEMPLATE_DIR . 'index' . DS . 'ajax' . DS . 'last_message.php'); ?>
-<!--                </div>-->
-<!--            </div>-->
-<!--        </div>-->
+        <div class="portlet light bordered">
+            <div class="portlet-title">
+                <div class="caption caption-md">
+                    <i class="icon-bar-chart theme-font hide"></i>
+                    <span class="caption-subject font-blue-madison bold uppercase">Latest Incoming Message</span>
+                </div>
+                <div class="actions">
+                    <a href="<?php echo SITE_DIR; ?>emulator/?campaign=<?php echo $latest['campaign_id']; ?>&user_id=<?php echo $latest['user_id']; ?>&number_id=<?php echo $latest['recipient']; ?>#override"
+                       class="btn blue btn-outline">
+                        <i class="fa fa-pencil"></i> Override
+                    </a>
+                    <a href="<?php echo SITE_DIR; ?>emulator/?campaign=<?php echo $latest['campaign_id']; ?>&user_id=<?php echo $latest['user_id']; ?>&number_id=<?php echo $latest['recipient']; ?>"
+                       class="btn btn-outline green">
+                        <i class="fa fa-link"></i> Go to Chat
+                    </a>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div class="general-item-list" id="last_container">
+                    <?php require_once(TEMPLATE_DIR . 'index' . DS . 'ajax' . DS . 'last_message.php'); ?>
+                </div>
+            </div>
+        </div>
         <div class="portlet light bordered">
             <div class="portlet-title">
                 <div class="caption font-dark">
@@ -148,9 +148,9 @@
                     <span class="caption-subject bold uppercase"> Chat</span>
                 </div>
                 <div class="actions">
-<!--                    <button class="btn blue btn-outline" id="override_btn">-->
-<!--                        <i class="fa fa-pencil"></i> Override-->
-<!--                    </button>-->
+                    <button class="btn blue btn-outline" id="override_btn">
+                        <i class="fa fa-pencil"></i> Override
+                    </button>
                     <a class="btn red btn-outline" data-toggle="modal" href="#clear_chat_modal" id="clear_chat">
                         <i class="fa fa-refresh"></i> Clear Chat
                     </a>
@@ -216,8 +216,27 @@
             };
             ajax(params);
             window.location.hash = '';
-//            history.pushState('', document.title, window.location.pathname);
         }
+
+        $(window).bind('hashchange', function() {
+            if(window.location.hash == '#override') {
+                var values = {};
+                values.user_id = $('#user_id').val();
+                values.campaign_id = $("#campaign_id").val();
+                values.recipient = $("#number_id").val();
+                $("#override_form").slideDown();
+                $('[name="override[sms]"]').focus();
+                var params = {
+                    'action': 'prevent_override',
+                    'values': values,
+                    'callback': function (msg) {
+
+                    }
+                };
+                ajax(params);
+                window.location.hash = '';
+            }
+        });
 
         $("body").on("click", "#override_btn", function () {
             var values = {};
