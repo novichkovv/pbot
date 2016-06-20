@@ -41,8 +41,8 @@
                         <tr>
                             <th>User Name</th>
                             <th>Date</th>
-                            <th>Activities</th>
-                            <th>Last Activity</th>
+                            <th>SMS sent</th>
+                            <th>Last Sms Date</th>
                         </tr>
                         </thead>
                         <tbody>
