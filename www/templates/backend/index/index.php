@@ -19,9 +19,9 @@
                 </select>
             </form>
         </div>
-<!--        <div class="col-md-3">-->
-<!--            <a href="#clone_modal" data-toggle="modal" class="btn btn-outline green">Clone Phrases</a>-->
-<!--        </div>-->
+        <div class="col-md-3">
+            <a href="#clone_modal" data-toggle="modal" class="btn btn-outline green">Clone Phrases</a>
+        </div>
     </div>
     <br>
     <div class="row">
