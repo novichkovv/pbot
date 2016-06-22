@@ -41,7 +41,7 @@ class index_controller extends controller
             header('Location: ' . SITE_DIR);
         }
 
-        $campaigns = $this->model('campaigns')->getByField('system_user_id', registry::get('user')['id'], true);
+        $campaigns = $this->model('campaigns')->getAll();
         if(isset($_SESSION['campaign'])) {
             $this->render('phrases', $this->model('phrases')->getPhrases($_SESSION['campaign']));
         } elseif($campaigns) {
