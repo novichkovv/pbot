@@ -299,6 +299,20 @@ class cron_class extends base
                     $macro[$v['mask']] = $v['reply'];
                 }
                 $sms = strtr($global['reply'], $macro);
+                @preg_match_all("/\{[^\}]*\}/", $sms, $matches);
+                if($matches[0]) {
+                    foreach ($matches[0] as $match) {
+                        $m = strtr($match, array('{' => '', '}' => ''));
+                        $arr = explode('|', $m);
+                        foreach ($arr as $k => $v) {
+                            if(!empty($match_word) && false !== strpos($v, $match_word) && count($arr) > 1) {
+                                unset($arr[$k]);
+                            }
+                        }
+                        $choice = $arr[array_rand($arr)];
+                        $sms = str_replace($match, $choice, $sms);
+                    }
+                }
                 $res = array(
                     'sms' => $sms,
                     'phone' => $user_to_keep['phone'],
@@ -332,7 +346,22 @@ class cron_class extends base
                     foreach ($tmp as $v) {
                         $macro[$v['mask']] = $v['reply'];
                     }
+
                     $sms = strtr($phrase['reply'], $macro);
+                    @preg_match_all("/\{[^\}]*\}/", $sms, $matches);
+                    if($matches[0]) {
+                        foreach ($matches[0] as $match) {
+                            $m = strtr($match, array('{' => '', '}' => ''));
+                            $arr = explode('|', $m);
+                            foreach ($arr as $k => $v) {
+                                if(!empty($match_word) && false !== strpos($v, $match_word) && count($arr) > 1) {
+                                    unset($arr[$k]);
+                                }
+                            }
+                            $choice = $arr[array_rand($arr)];
+                            $sms = str_replace($match, $choice, $sms);
+                        }
+                    }
                     $res = array(
                         'sms' => $sms,
                         'phone' => $user_to_keep['phone'],
