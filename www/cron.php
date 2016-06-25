@@ -17,7 +17,7 @@ require_once(CORE_DIR . 'autoload.php');
 $cron = new cron_class();
 $cron->init();
 $cron->checkQueue();
-$cron->checkGlobals();
+//$cron->checkGlobals();
 $mtime = microtime();
 $mtime = explode(" ",$mtime);
 $mtime = $mtime[1] + $mtime[0];
