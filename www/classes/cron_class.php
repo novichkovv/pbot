@@ -439,4 +439,11 @@ class cron_class extends base
 
 
     }
+
+    public function cleanUp()
+    {
+        $this->model('messages')->cleanOldMessages();
+        $this->model('queues')->cleanOldQueues();
+        $this->model('phrases')->cleanOldUserPhrases();
+    }
 }

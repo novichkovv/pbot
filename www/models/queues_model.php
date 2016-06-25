@@ -99,4 +99,43 @@ class queues_model extends model
 
         return $res;
     }
+
+    public function cleanOldQueues()
+    {
+        $field_names = [];
+        foreach ($this->get_all($stm = $this->pdo->prepare('
+            show columns from queues
+        ')) as $fields) {
+            if($fields['Field'] == 'id') {
+                continue;
+            }
+            $field_names[] = '`' . $fields['Field'] . '`';
+        }
+
+        $stm = $this->pdo->prepare('
+            SELECT ' . implode(',', $field_names) . ' FROM queues WHERE create_date < NOW() - INTERVAL 4 DAY
+        ');
+        $values = [];
+        $all = $this->get_all($stm);
+        if(!$all) {
+            return;
+        }
+        foreach ($all as $message) {
+            $vals = [];
+            foreach ($message as $k => $v) {
+                $vals[] = '"' . addslashes($v) . '"';
+            }
+
+            $values[] = '(' . implode(',', $vals) . ')';
+        }
+        $query = '
+        INSERT INTO old_queues (' . implode(',', $field_names) . ') VALUES ' . implode(',', $values) . '
+        ';
+        $this->pdo->prepare($query)->execute();
+        $stm = $this->pdo->prepare('
+            DELETE FROM queues WHERE create_date < NOW() - INTERVAL 4 DAY
+        ');
+        $stm->execute();
+
+    }
 }

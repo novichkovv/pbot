@@ -70,4 +70,43 @@ class messages_model extends model
         $stm->getQuery(['number' => $number]);
         return $this->get_all($stm, array('number' => $number));
     }
+
+    public function cleanOldMessages()
+    {
+        $field_names = [];
+        foreach ($this->get_all($stm = $this->pdo->prepare('
+            show columns from messages
+        ')) as $fields) {
+            if($fields['Field'] == 'id') {
+                continue;
+            }
+            $field_names[] = '`' . $fields['Field'] . '`';
+        }
+
+        $stm = $this->pdo->prepare('
+            SELECT ' . implode(',', $field_names) . ' FROM messages WHERE create_date < NOW() - INTERVAL 4 DAY
+        ');
+        $values = [];
+        $all = $this->get_all($stm);
+        if(!$all) {
+            return;
+        }
+        foreach ($all as $message) {
+            $vals = [];
+            foreach ($message as $k => $v) {
+                $vals[] = '"' . addslashes($v) . '"';
+            }
+
+            $values[] = '(' . implode(',', $vals) . ')';
+        }
+        $query = '
+        INSERT INTO old_messages (' . implode(',', $field_names) . ') VALUES ' . implode(',', $values) . '
+        ';
+        $this->pdo->prepare($query)->execute();
+        $stm = $this->pdo->prepare('
+            DELETE FROM messages WHERE create_date < NOW() - INTERVAL 4 DAY
+        ');
+        $stm->execute();
+
+    }
 }

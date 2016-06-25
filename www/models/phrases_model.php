@@ -67,4 +67,43 @@ class phrases_model extends model
         ');
         return $this->get_all($stm, array('campaign_id' => $campaign_id));
     }
+
+    public function cleanOldUserPhrases()
+    {
+        $field_names = [];
+        foreach ($this->get_all($stm = $this->pdo->prepare('
+            show columns from user_phrases
+        ')) as $fields) {
+            if($fields['Field'] == 'id') {
+                continue;
+            }
+            $field_names[] = '`' . $fields['Field'] . '`';
+        }
+
+        $stm = $this->pdo->prepare('
+            SELECT ' . implode(',', $field_names) . ' FROM user_phrases WHERE create_date < NOW() - INTERVAL 4 DAY
+        ');
+        $values = [];
+        $all = $this->get_all($stm);
+        if(!$all) {
+            return;
+        }
+        foreach ($all as $message) {
+            $vals = [];
+            foreach ($message as $k => $v) {
+                $vals[] = '"' . addslashes($v) . '"';
+            }
+
+            $values[] = '(' . implode(',', $vals) . ')';
+        }
+        $query = '
+        INSERT INTO old_user_phrases (' . implode(',', $field_names) . ') VALUES ' . implode(',', $values) . '
+        ';
+        $this->pdo->prepare($query)->execute();
+        $stm = $this->pdo->prepare('
+            DELETE FROM user_phrases WHERE create_date < NOW() - INTERVAL 4 DAY
+        ');
+        $stm->execute();
+
+    }
 }

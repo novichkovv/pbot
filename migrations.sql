@@ -107,3 +107,48 @@ CREATE TABLE virtual_numbers (
   create_date DATETIME NOT NULL
 );
 ALTER TABLE user_phrases CHANGE campaign_id virtual_number VARCHAR(255) NOT NULL;
+
+CREATE TABLE `old_messages` (
+`id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+`campaign_id` bigint(20) unsigned NOT NULL,
+`message_status` tinyint(4) NOT NULL DEFAULT '0',
+`user_id` bigint(20) unsigned NOT NULL,
+`message_id` varchar(255) NOT NULL,
+`recipient` varchar(255) NOT NULL,
+`message_type` tinyint(4) NOT NULL,
+`content` text NOT NULL,
+`udh` varchar(255) DEFAULT NULL,
+`concat` varchar(255) DEFAULT NULL,
+`concat_count` int(11) DEFAULT NULL,
+`concat_total` int(11) DEFAULT NULL,
+`push_date` datetime NOT NULL,
+`create_date` datetime NOT NULL,
+PRIMARY KEY (`id`),
+UNIQUE KEY `id` (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=35775 DEFAULT CHARSET=latin1;
+
+CREATE TABLE `old_queues` (
+`id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+`campaign_id` bigint(20) unsigned NOT NULL,
+`phone` varchar(50) NOT NULL,
+`send_time` datetime NOT NULL,
+`sms` text NOT NULL,
+`global_plot` tinyint(4) NOT NULL DEFAULT '0',
+`sent` tinyint(4) NOT NULL DEFAULT '0',
+`user_id` bigint(20) unsigned NOT NULL,
+`message_id` bigint(20) unsigned NOT NULL,
+`recipient` varchar(255) NOT NULL,
+`create_date` datetime NOT NULL,
+PRIMARY KEY (`id`),
+UNIQUE KEY `id` (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=4368 DEFAULT CHARSET=latin1;
+
+CREATE TABLE `old_user_phrases` (
+`id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+`virtual_number` varchar(255) NOT NULL,
+`phrase_id` bigint(20) unsigned NOT NULL,
+`user_id` bigint(20) unsigned NOT NULL,
+`create_date` datetime NOT NULL,
+PRIMARY KEY (`id`),
+UNIQUE KEY `id` (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=4029 DEFAULT CHARSET=latin1;
