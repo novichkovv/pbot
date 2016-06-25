@@ -9,8 +9,6 @@ class index_controller extends controller
 {
     public function index()
     {
-//        echo preg_match("/(pic(s)?|pix|image)/", 'pics');exit;
-//        echo preg_match("/(i|i\'?m) (pic|pix|picture|photo|image)(s)? (ready|i(\'?m| am) down|let\'?s)user\s?(name|id)?/", 'i pic ready user');exit;
         if(isset($_POST['log_out'])) {
             $this->logOut();
             header('Location: ' . SITE_DIR);
@@ -96,14 +94,6 @@ class index_controller extends controller
                 echo json_encode(array('status' => 1, 'template' => $template));
                 exit;
                 break;
-
-//            case "remove_phrase":
-//                foreach ($phra as $) {
-//
-//                }
-//
-//                exit;
-//                break;
         }
     }
 

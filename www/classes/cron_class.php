@@ -155,18 +155,18 @@ class cron_class extends base
                 }
             }
         }
-        if(!$sms && rand(0,3) == 1) {
-            foreach ($globals as $v) {
-                if($user_phrases[9][$v['id']]) {
-                    continue;
-                }
-                $sms = $v['reply'];
-                $delay = $v['delay'];
-                $global = true;
-                $this->model('user_phrases')->insert(['user_id' => $message['user_id'], 'phrase_id' => $v['id'], 'create_date' => date('Y-m-d H:i:s'), 'virtual_number' => $message['recipient']]);
-                break;
-            }
-        }
+//        if(!$sms && rand(0,3) == 1) {
+//            foreach ($globals as $v) {
+//                if($user_phrases[9][$v['id']]) {
+//                    continue;
+//                }
+//                $sms = $v['reply'];
+//                $delay = $v['delay'];
+//                $global = true;
+//                $this->model('user_phrases')->insert(['user_id' => $message['user_id'], 'phrase_id' => $v['id'], 'create_date' => date('Y-m-d H:i:s'), 'virtual_number' => $message['recipient']]);
+//                break;
+//            }
+//        }
         if(!$sms) {
             foreach ($normal_wt as $v) {
 //                if($user_phrases[6][$v['id']]) {
@@ -279,13 +279,92 @@ class cron_class extends base
     public function checkGlobals()
     {
         $today_users = $this->model('queues')->getTodayUsers();
+        $to_keep = $this->model('queues')->getForGlobals($today_users);
+        $globals = [];
+        foreach ($this->model('phrases')->getByFields(['status_id' => 9], true, 'sort_order') as $v) {
+            $globals[$v['campaign_id']][] = $v;
+        }
+        foreach ($to_keep as $user_to_keep) {
+            if ($user_to_keep['global_plot'] >= 1 || time() - strtotime($user_to_keep['send_time']) < GLOBAL_DELAY) {
+                continue;
+            }
+            $user_phrases = $this->model('phrases')->getLastUserPhrases($user_to_keep['user_id'], $user_to_keep['campaign_id'], $user_to_keep['recipient']);
+            foreach ($globals[$user_to_keep['campaign_id']] as $global) {
+                if ($user_phrases[9][$global['id']]) {
+                    continue;
+                }
+                $tmp = $this->model('phrases')->getPhrasesWithStatusIn([2, 8], $user_to_keep['campaign_id']);
+                $macro = [];
+                foreach ($tmp as $v) {
+                    $macro[$v['mask']] = $v['reply'];
+                }
+                $sms = strtr($global['reply'], $macro);
+                $res = array(
+                    'sms' => $sms,
+                    'phone' => $user_to_keep['phone'],
+                    'user_id' => $user_to_keep['user_id'],
+                    'send_time' => date('Y-m-d H:i:s'),
+                    'message_id' => 0,
+                    'recipient' => $user_to_keep['recipient'],
+                    'global_plot' => 1,
+                    'campaign_id' => $user_to_keep['campaign_id']
+                );
+                $this->model('user_phrases')->insert(['user_id' => $user_to_keep['user_id'], 'phrase_id' => $global['id'], 'create_date' => date('Y-m-d H:i:s'), 'virtual_number' => $user_to_keep['recipient']]);
+                $this->putInQueue($res);
+                break;
+            }
+        }
+        $keeps = [];
+        foreach ($this->model('phrases')->getByField('status_id', 10, true) as $v) {
+            $keeps[$v['campaign_id']][] = $v;
+        }
+        foreach ($to_keep as $user_to_keep) {
+//            echo $user_to_keep['send_time'];
+//            print_r($user_to_keep);
+            $user_phrases = $this->model('phrases')->getLastUserPhrases($user_to_keep['user_id'], $user_to_keep['campaign_id'], $user_to_keep['recipient']);
+            foreach ($keeps[$user_to_keep['campaign_id']] as $phrase) {
+                if ($user_phrases[10][$phrase['id']] || !$user_phrases) {
+                    continue;
+                }
+                if(time() - strtotime($user_to_keep['send_time']) >= $phrase['delay']) {
+                    $tmp = $this->model('phrases')->getPhrasesWithStatusIn([2, 8], $user_to_keep['campaign_id']);
+                    $macro = [];
+                    foreach ($tmp as $v) {
+                        $macro[$v['mask']] = $v['reply'];
+                    }
+                    $sms = strtr($phrase['reply'], $macro);
+                    $res = array(
+                        'sms' => $sms,
+                        'phone' => $user_to_keep['phone'],
+                        'user_id' => $user_to_keep['user_id'],
+                        'send_time' => date('Y-m-d H:i:s'),
+                        'message_id' => 0,
+                        'recipient' => $user_to_keep['recipient'],
+                        'global_plot' => 2,
+                        'campaign_id' => $user_to_keep['campaign_id']
+                    );
+                    $this->model('user_phrases')->insert(['user_id' => $user_to_keep['user_id'], 'phrase_id' => $phrase['id'], 'create_date' => date('Y-m-d H:i:s'), 'virtual_number' => $user_to_keep['recipient']]);
+                    $this->putInQueue($res);
+                    break;
+                }
+            }
+
+        }
+        //continue;
+        return;
         /*
          * Global plots
          */
         foreach ($this->model('campaigns')->getAll() as $campaign) {
+            print_r($campaign);
             $to_keep = $this->model('queues')->getForGlobals($campaign['id'], $today_users[$campaign['id']]);
+            print_r($to_keep);
             $globals = $this->model('phrases')->getByFields(['status_id' => 9, 'campaign_id' => $campaign['id']], true, 'sort_order');
             foreach ($to_keep as $user_to_keep) {
+                print_r($user_to_keep);
+                if($user_to_keep['global_plot'] == 1 || time() - strtotime($user_to_keep['send_time']) < GLOBAL_DELAY) {
+                    continue;
+                }
                 $user_phrases = $this->model('phrases')->getLastUserPhrases($user_to_keep['user_id'], $campaign['id'], $user_to_keep['recipient']);
                 foreach ($globals as $global) {
                     if($user_phrases[9][$global['id']]) {
@@ -303,6 +382,7 @@ class cron_class extends base
                         'user_id' => $user_to_keep['user_id'],
                         'send_time' => date('Y-m-d H:i:s'),
                         'message_id' => 0,
+                        'recipient' => $user_to_keep['recipient'],
                         'global_plot' => 1,
                         'campaign_id' => $campaign['id']
                     );
@@ -317,8 +397,11 @@ class cron_class extends base
              */
             $keeps = $this->model('phrases')->getByField('status_id', 10, true);
             foreach ($keeps as $keep) {
-                $to_keep = $this->model('queues')->getToKeepAlive($keep['delay'], $campaign['id'], $today_users[$campaign['id']]);
+                $to_keep = $this->model('queues')->getToKeepAlive($campaign['id'], $today_users[$campaign['id']]);
                 foreach ($to_keep as $user_to_keep) {
+                    if($user_to_keep['global_plot'] == 1 || time() - strtotime($user_to_keep['send_time']) < $keep['delay']) {
+                        continue;
+                    }
                     $user_phrases = $this->model('phrases')->getLastUserPhrases($user_to_keep['user_id'], $campaign['id'], $user_to_keep['recipient']);
                     $stop = false;
                     if($user_phrases[10]) {
@@ -343,11 +426,13 @@ class cron_class extends base
                         'user_id' => $user_to_keep['user_id'],
                         'send_time' => date('Y-m-d H:i:s'),
                         'message_id' => 0,
+                        'recipient' => $user_to_keep['recipient'],
                         'global_plot' => 1,
                         'campaign_id' => $campaign['id']
                     );
                     $this->model('user_phrases')->insert(['user_id' => $user_to_keep['user_id'], 'phrase_id' => $keep['id'], 'create_date' => date('Y-m-d H:i:s'), 'virtual_number' => $user_to_keep['recipient']]);
                     $this->putInQueue($res);
+                    break;
                 }
             }
         }
