@@ -351,6 +351,7 @@ class cron_class extends base
             if($_GET['debug']) {
                 print_r($user_to_keep);
                 print_r($keeps);
+                exit;
             }
             $user_phrases = $this->model('phrases')->getLastUserPhrases($user_to_keep['user_id'], $user_to_keep['campaign_id'], $user_to_keep['recipient']);
             foreach ($keeps[$user_to_keep['campaign_id']] as $phrase) {
