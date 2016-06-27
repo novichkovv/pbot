@@ -5,10 +5,8 @@
  * Date: 09.06.2016
  * Time: 23:00
  */
-$mtime = microtime();		//Считываем текущее время
-$mtime = explode(" ",$mtime);	//Разделяем секунды и миллисекунды
-// Составляем одно число из секунд и миллисекунд
-// и записываем стартовое время в переменную
+$mtime = microtime();
+$mtime = explode(" ",$mtime);
 $tstart = $mtime[1] + $mtime[0];
 
 require_once('config.php');

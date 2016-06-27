@@ -19,6 +19,7 @@ class model extends base
     /**
      * @param PDOStatement $stm
      * @param array $data
+     * @return mixed
      */
 
     public function execute(PDOStatement $stm, array $data = array())

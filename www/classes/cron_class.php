@@ -224,6 +224,13 @@ class cron_class extends base
                 $sms = str_replace($match, $choice, $sms);
             }
         }
+        if(false !== strpos($sms, '%GEO%')) {
+            $state = $this->model('state_codes')->getByField('state_code', substr($message['phone'], 1, 3))['state'];
+            if(!$state) {
+                $state = "I'm close to you";
+            }
+            $sms = str_replace('%GEO%', $state, $sms);
+        }
         $res = array(
             'sms' => $sms,
             'phone' => $message['phone'],
@@ -270,7 +277,7 @@ class cron_class extends base
             }
             $message['sent'] = 1;
             $this->model('queues')->insert($message);
-            if(!in_array($message['phone'], [111,222,333,444,555,666,777,888,999])) {
+            if(!in_array($message['phone'], [111,222,333,444,555,666,777,888,999]) && DEVELOPMENT_MODE == false) {
                 $this->api()->sendMessage($message['phone'], $message['sms'], ['from' => $message['recipient']]);
             }
         }
@@ -313,6 +320,13 @@ class cron_class extends base
                         $sms = str_replace($match, $choice, $sms);
                     }
                 }
+                if(false !== strpos($sms, '%GEO%')) {
+                    $state = $this->model('state_codes')->getByField('state_code', substr($message['phone'], 1, 3))['state'];
+                    if(!$state) {
+                        $state = "I'm close to you";
+                    }
+                    $sms = str_replace('%GEO%', $state, $sms);
+                }
                 $res = array(
                     'sms' => $sms,
                     'phone' => $user_to_keep['phone'],
@@ -333,8 +347,6 @@ class cron_class extends base
             $keeps[$v['campaign_id']][] = $v;
         }
         foreach ($to_keep as $user_to_keep) {
-//            echo $user_to_keep['send_time'];
-//            print_r($user_to_keep);
             $user_phrases = $this->model('phrases')->getLastUserPhrases($user_to_keep['user_id'], $user_to_keep['campaign_id'], $user_to_keep['recipient']);
             foreach ($keeps[$user_to_keep['campaign_id']] as $phrase) {
                 if ($user_phrases[10][$phrase['id']] || !$user_phrases) {
@@ -348,6 +360,13 @@ class cron_class extends base
                     }
 
                     $sms = strtr($phrase['reply'], $macro);
+                    if(false !== strpos($sms, '%GEO%')) {
+                        $state = $this->model('state_codes')->getByField('state_code', substr($message['phone'], 1, 3))['state'];
+                        if(!$state) {
+                            $state = "I'm close to you";
+                        }
+                        $sms = str_replace('%GEO%', $state, $sms);
+                    }
                     @preg_match_all("/\{[^\}]*\}/", $sms, $matches);
                     if($matches[0]) {
                         foreach ($matches[0] as $match) {
@@ -379,94 +398,6 @@ class cron_class extends base
             }
 
         }
-        //continue;
-        return;
-        /*
-         * Global plots
-         */
-        foreach ($this->model('campaigns')->getAll() as $campaign) {
-            print_r($campaign);
-            $to_keep = $this->model('queues')->getForGlobals($campaign['id'], $today_users[$campaign['id']]);
-            print_r($to_keep);
-            $globals = $this->model('phrases')->getByFields(['status_id' => 9, 'campaign_id' => $campaign['id']], true, 'sort_order');
-            foreach ($to_keep as $user_to_keep) {
-                print_r($user_to_keep);
-                if($user_to_keep['global_plot'] == 1 || time() - strtotime($user_to_keep['send_time']) < GLOBAL_DELAY) {
-                    continue;
-                }
-                $user_phrases = $this->model('phrases')->getLastUserPhrases($user_to_keep['user_id'], $campaign['id'], $user_to_keep['recipient']);
-                foreach ($globals as $global) {
-                    if($user_phrases[9][$global['id']]) {
-                        continue;
-                    }
-                    $tmp = $this->model('phrases')->getPhrasesWithStatusIn([2,8], $campaign['id']);
-                    $macro = [];
-                    foreach ($tmp as $v) {
-                        $macro[$v['mask']] = $v['reply'];
-                    }
-                    $sms = strtr($global['reply'], $macro);
-                    $res = array(
-                        'sms' => $sms,
-                        'phone' => $user_to_keep['phone'],
-                        'user_id' => $user_to_keep['user_id'],
-                        'send_time' => date('Y-m-d H:i:s'),
-                        'message_id' => 0,
-                        'recipient' => $user_to_keep['recipient'],
-                        'global_plot' => 1,
-                        'campaign_id' => $campaign['id']
-                    );
-                    $this->model('user_phrases')->insert(['user_id' => $user_to_keep['user_id'], 'phrase_id' => $global['id'], 'create_date' => date('Y-m-d H:i:s'), 'virtual_number' => $user_to_keep['recipient']]);
-                    $this->putInQueue($res);
-                    break;
-                }
-            }
-
-            /*
-             * keep alive
-             */
-            $keeps = $this->model('phrases')->getByField('status_id', 10, true);
-            foreach ($keeps as $keep) {
-                $to_keep = $this->model('queues')->getToKeepAlive($campaign['id'], $today_users[$campaign['id']]);
-                foreach ($to_keep as $user_to_keep) {
-                    if($user_to_keep['global_plot'] == 1 || time() - strtotime($user_to_keep['send_time']) < $keep['delay']) {
-                        continue;
-                    }
-                    $user_phrases = $this->model('phrases')->getLastUserPhrases($user_to_keep['user_id'], $campaign['id'], $user_to_keep['recipient']);
-                    $stop = false;
-                    if($user_phrases[10]) {
-                        foreach ($user_phrases[10] as $kept) {
-                            if($kept['delay'] == $keep['delay']) {
-                                $stop = true;
-                            }
-                        }
-                    }
-                    if($stop) {
-                        continue;
-                    }
-                    $tmp = $this->model('phrases')->getPhrasesWithStatusIn([2,8], $campaign['id']);
-                    $macro = [];
-                    foreach ($tmp as $v) {
-                        $macro[$v['mask']] = $v['reply'];
-                    }
-                    $sms = strtr($keep['reply'], $macro);
-                    $res = array(
-                        'sms' => $sms,
-                        'phone' => $user_to_keep['phone'],
-                        'user_id' => $user_to_keep['user_id'],
-                        'send_time' => date('Y-m-d H:i:s'),
-                        'message_id' => 0,
-                        'recipient' => $user_to_keep['recipient'],
-                        'global_plot' => 1,
-                        'campaign_id' => $campaign['id']
-                    );
-                    $this->model('user_phrases')->insert(['user_id' => $user_to_keep['user_id'], 'phrase_id' => $keep['id'], 'create_date' => date('Y-m-d H:i:s'), 'virtual_number' => $user_to_keep['recipient']]);
-                    $this->putInQueue($res);
-                    break;
-                }
-            }
-        }
-
-
     }
 
     public function cleanUp()
