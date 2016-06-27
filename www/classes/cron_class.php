@@ -346,7 +346,12 @@ class cron_class extends base
         foreach ($this->model('phrases')->getByField('status_id', 10, true) as $v) {
             $keeps[$v['campaign_id']][] = $v;
         }
+
         foreach ($to_keep as $user_to_keep) {
+            if($_GET['debug']) {
+                print_r($user_to_keep);
+                print_r($keeps);
+            }
             $user_phrases = $this->model('phrases')->getLastUserPhrases($user_to_keep['user_id'], $user_to_keep['campaign_id'], $user_to_keep['recipient']);
             foreach ($keeps[$user_to_keep['campaign_id']] as $phrase) {
                 if ($user_phrases[10][$phrase['id']] || !$user_phrases) {
