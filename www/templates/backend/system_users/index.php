@@ -32,7 +32,7 @@
                                 </div>
                                 <div class="portlet-body">
                                     <div class="form-group">
-                                        <label class="control-label col-md-4">Global Plots Delay</label>
+                                        <label class="control-label col-md-4">Global Plots Delay *</label>
                                         <div class="col-md-6">
                                             <input type="text"  id="global_setting" name="settings[global_delay]" class="form-control" value="<?php echo $settings['global_delay']; ?>">
                                         </div>
