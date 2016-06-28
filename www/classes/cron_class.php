@@ -285,6 +285,8 @@ class cron_class extends base
 
     public function checkGlobals()
     {
+        $count_1 = 0;
+        $count_2 = 0;
         $today_users = $this->model('queues')->getTodayUsers();
         $to_keep = $this->model('queues')->getForGlobals($today_users);
         $globals = [];
@@ -292,9 +294,11 @@ class cron_class extends base
             $globals[$v['campaign_id']][] = $v;
         }
         foreach ($to_keep as $user_to_keep) {
-            if ($user_to_keep['global_plot'] >= 1 || time() - strtotime($user_to_keep['send_time']) < GLOBAL_DELAY) {
+            $count_1 ++;
+            if ($user_to_keep['global_plot'] >= 1 || time() - strtotime($user_to_keep['send_time']) < GLOBAL_DELAY  || time() - strtotime($user_to_keep['send_time']) > GLOBAL_DELAY + 5*60) {
                 continue;
             }
+            $count_2 ++;
             $user_phrases = $this->model('phrases')->getLastUserPhrases($user_to_keep['user_id'], $user_to_keep['campaign_id'], $user_to_keep['recipient']);
             if(!$globals[$user_to_keep['campaign_id']]) {
                 continue;
@@ -403,7 +407,8 @@ class cron_class extends base
                     break;
                 }
             }
-
+            $this->writeLog('test', 'c1 - ' . $count_1);
+            $this->writeLog('test', 'c2 - ' . $count_2);
         }
     }
 
