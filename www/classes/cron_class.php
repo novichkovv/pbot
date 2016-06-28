@@ -408,8 +408,8 @@ class cron_class extends base
                 }
             }
         }
-        $this->writeLog('test', 'c1 - ' . $count_1);
-        $this->writeLog('test', 'c2 - ' . $count_2);
+//        $this->writeLog('test', 'c1 - ' . $count_1);
+//        $this->writeLog('test', 'c2 - ' . $count_2);
     }
 
     public function cleanUp()
