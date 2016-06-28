@@ -133,7 +133,7 @@ class queues_model extends model
         ';
         $this->pdo->prepare($query)->execute();
         $stm = $this->pdo->prepare('
-            DELETE FROM queues WHERE create_date < NOW() - INTERVAL 4 DAY
+            DELETE FROM queues WHERE create_date < NOW() - INTERVAL 3 DAY
         ');
         $stm->execute();
 

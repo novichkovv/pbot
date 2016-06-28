@@ -84,7 +84,7 @@ class messages_model extends model
         }
 
         $stm = $this->pdo->prepare('
-            SELECT ' . implode(',', $field_names) . ' FROM messages WHERE create_date < NOW() - INTERVAL 4 DAY
+            SELECT ' . implode(',', $field_names) . ' FROM messages WHERE create_date < NOW() - INTERVAL 3 DAY
         ');
         $values = [];
         $all = $this->get_all($stm);
