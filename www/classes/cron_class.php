@@ -296,6 +296,9 @@ class cron_class extends base
                 continue;
             }
             $user_phrases = $this->model('phrases')->getLastUserPhrases($user_to_keep['user_id'], $user_to_keep['campaign_id'], $user_to_keep['recipient']);
+            if(!$globals[$user_to_keep['campaign_id']]) {
+                continue;
+            }
             foreach ($globals[$user_to_keep['campaign_id']] as $global) {
                 if ($user_phrases[9][$global['id']]) {
                     continue;
