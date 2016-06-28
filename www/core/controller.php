@@ -28,6 +28,11 @@ abstract class controller extends base
 
     function __construct($controller, $action)
     {
+        $system_settings = [];
+        foreach ($this->model('system_settings')->getAll() as $v) {
+            $system_settings[$v['setting_key']] = $v['setting_value'];
+        }
+        registry::set('system_settings', $system_settings);
         if(isset($_POST['log_out_btn'])) {
             $this->logOut();
             header('Location: ' . SITE_DIR);

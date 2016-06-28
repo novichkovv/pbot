@@ -13,8 +13,29 @@ class system_users_controller extends controller
             $this->model('system_users')->deleteById($_POST['user_id']);
             header('Location: ' . SITE_DIR . 'system_users/');
         }
+        $this->render('settings', registry::get('system_settings'));
         $this->render('users', $this->model('system_users')->getAll());
         $this->view('system_users' . DS . 'index');
+    }
+
+    public function index_ajax()
+    {
+        switch ($_REQUEST['action']) {
+            case "save_settings":
+                $settings = registry::get('system_settings');
+                foreach ($_POST['settings'] as $key => $value) {
+                    $setting = $this->model('system_settings')->getByField('setting_key', $key);
+                    $setting['setting_key'] = $key;
+                    $setting['setting_value'] = $value;
+                    print_r($setting);
+                    $this->model('system_settings')->insert($setting);
+                    $settings[$key] = $value;
+                }
+                registry::remove('system_settings');
+                registry::set('system_settings', $settings);
+                exit;
+                break;
+        }
     }
 
     public function add()

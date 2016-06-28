@@ -126,7 +126,6 @@ var validate = function validate(form_id)
     {
         if(!$(this).val() || $(this).val() == '' || $(this).val() == null)
         {
-            console.log($(this).attr('name') + ' - ' + $(this).val());
             $(this).parent().find('.error-require').slideDown();
             validate = false;
         }

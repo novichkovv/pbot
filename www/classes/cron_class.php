@@ -7,6 +7,29 @@
  */
 class cron_class extends base
 {
+    public function __construct()
+    {
+        if(!$tmp = registry::get('system_settings')['global_delay']) {
+            $tmp = '20-30';
+        }
+        $arr = explode('-', $tmp);
+        $delay = rand($arr[0], $arr[1]);
+        if(!$delay) {
+            $delay = 30;
+        }
+        define('GLOBAL_DELAY', $delay);
+        if(!$tmp = registry::get('system_settings')['delay']) {
+            $tmp = '20-30';
+        }
+
+        $arr = explode('-', $tmp);
+        $delay = rand($arr[0], $arr[1]);
+        if(!$delay) {
+            $delay = 30;
+        }
+        define('MIN_DELAY', $delay); //in seconds
+    }
+
     public function init()
     {
         $this->readMessages();
@@ -210,6 +233,7 @@ class cron_class extends base
         if(!$delay) {
             $delay = MIN_DELAY;
         }
+        $this->writeLog('test', $delay);
         @preg_match_all("/\{[^\}]*\}/", $sms, $matches);
         if($matches[0]) {
             foreach ($matches[0] as $match) {
@@ -328,7 +352,7 @@ class cron_class extends base
                     }
                 }
                 if(false !== strpos($sms, '%GEO%')) {
-                    $state = $this->model('state_codes')->getByField('state_code', substr($message['phone'], 1, 3))['state'];
+                    $state = $this->model('state_codes')->getByField('state_code', substr($user_to_keep['recipient'], 1, 3))['state'];
                     if(!$state) {
                         $state = "I'm close to you";
                     }
@@ -372,7 +396,7 @@ class cron_class extends base
 
                     $sms = strtr($phrase['reply'], $macro);
                     if(false !== strpos($sms, '%GEO%')) {
-                        $state = $this->model('state_codes')->getByField('state_code', substr($message['phone'], 1, 3))['state'];
+                        $state = $this->model('state_codes')->getByField('state_code', substr($user_to_keep['recipient'], 1, 3))['state'];
                         if(!$state) {
                             $state = "I'm close to you";
                         }

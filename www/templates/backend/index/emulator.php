@@ -298,7 +298,7 @@
         setInterval(function() {
             update_messages();
             update_last_message();
-        }, 15000);
+        }, 5000);
         $("#form").submit(function(e) {
             e.preventDefault();
             var campaign_id = $("#campaign_id").val();

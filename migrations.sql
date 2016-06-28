@@ -474,3 +474,9 @@ INSERT INTO `pbot`.`state_codes` (`state_code`, `state`) VALUES ('989', 'Michiga
 
 create unique index state_code on state_codes (state_code);
 INSERT INTO `pbot`.`statuses` (`status_name`) VALUES ('%GEO%');
+
+CREATE TABLE system_settings (
+  id SERIAL PRIMARY KEY,
+  setting_key VARCHAR (255) NOT NULL UNIQUE KEY,
+  setting_value VARCHAR(255) NULL
+)ENGINE=MyISAM;

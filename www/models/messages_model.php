@@ -109,4 +109,28 @@ class messages_model extends model
         $stm->execute();
 
     }
+
+    public function getSpamUsers()
+    {
+        $stm = $this->pdo->prepare('
+            SELECT
+                user_id
+            FROM
+                messages
+            WHERE
+                IF(concat IS NOT NULL,
+                    concat_count = concat_total,
+                    1)
+            GROUP BY user_id
+            HAVING COUNT(*) > :spam_quantity
+        ');
+        if(!$spam_quantity = registry::get('system_config')['blacklist']) {
+            $spam_quantity = 100;
+        }
+        $res = [];
+        foreach ($this->get_all($stm, array('spam_quantity' => $spam_quantity)) as $v) {
+            $res[$v['user_id']] = $v['user_id'];
+        }
+        return $res;
+    }
 }
