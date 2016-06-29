@@ -105,7 +105,7 @@ class emulator_controller extends controller
                 $this->getMessages($user, $campaign, $_POST['phone']);
                 $template = $this->fetch('index' . DS . 'ajax' . DS . 'chats');
                 echo json_encode(array('status' => 1, 'template' => $template, 'time' => date('Y-m-d H:i:s')));
-                require_once(ROOT_DIR . 'cron.php');
+//                require_once(ROOT_DIR . 'cron.php');
                 exit;
                 break;
 

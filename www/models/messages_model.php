@@ -142,8 +142,6 @@ class messages_model extends model
         $stm = $this->pdo->prepare('
             SELECT COUNT(*) count FROM messages WHERE user_id = :user_id
         ');
-        echo $spam_quantity;
-        echo ($this->get_row($stm, array('user_id' => $user_id))['count'] >= $spam_quantity);
         return ($this->get_row($stm, array('user_id' => $user_id))['count'] >= $spam_quantity);
     }
 }

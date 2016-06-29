@@ -58,6 +58,7 @@ class users_controller extends controller
             'u.phone repUser_Phone',
             'u.create_date repCreate_Date',
             'COUNT(m.id) repMessages_Sent',
+            'IF(u.blocked, "YES", "NO")',
             'MAX(push_date) repLast_Message'
         ];
         $params['join']['messages'] = [

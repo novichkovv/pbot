@@ -217,6 +217,16 @@ class model extends base
         return $result;
     }
 
+    /**
+     * @param $field
+     * @param array $values
+     * @param bool $show_all
+     * @param string $order
+     * @param string $limit
+     * @param bool $show
+     * @return array
+     */
+
     public function getByFieldIn($field, array $values, $show_all = false, $order = "", $limit = '', $show = false)
     {
         $vals = [];
