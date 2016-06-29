@@ -27,7 +27,6 @@ class system_users_controller extends controller
                     $setting = $this->model('system_settings')->getByField('setting_key', $key);
                     $setting['setting_key'] = $key;
                     $setting['setting_value'] = $value;
-                    print_r($setting);
                     $this->model('system_settings')->insert($setting);
                     $settings[$key] = $value;
                 }

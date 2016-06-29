@@ -369,7 +369,9 @@ class cron_class extends base
                     'campaign_id' => $user_to_keep['campaign_id']
                 );
                 $this->model('user_phrases')->insert(['user_id' => $user_to_keep['user_id'], 'phrase_id' => $global['id'], 'create_date' => date('Y-m-d H:i:s'), 'virtual_number' => $user_to_keep['recipient']]);
-                $this->putInQueue($res);
+                if(!$this->model('users')->getById($res['user_id'])['blocked']) {
+                    $this->putInQueue($res);
+                }
                 break;
             }
         }
@@ -427,7 +429,9 @@ class cron_class extends base
                         'campaign_id' => $user_to_keep['campaign_id']
                     );
                     $this->model('user_phrases')->insert(['user_id' => $user_to_keep['user_id'], 'phrase_id' => $phrase['id'], 'create_date' => date('Y-m-d H:i:s'), 'virtual_number' => $user_to_keep['recipient']]);
-                    $this->putInQueue($res);
+                    if(!$this->model('users')->getById($res['user_id'])['blocked']) {
+                        $this->putInQueue($res);
+                    }
                     break;
                 }
             }

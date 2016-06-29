@@ -480,3 +480,5 @@ CREATE TABLE system_settings (
   setting_key VARCHAR (255) NOT NULL UNIQUE KEY,
   setting_value VARCHAR(255) NULL
 )ENGINE=MyISAM;
+
+ALTER TABLE users ADD blocked TINYINT NOT NULL DEFAULT 0 AFTER phone;

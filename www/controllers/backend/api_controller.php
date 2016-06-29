@@ -20,6 +20,17 @@ class api_controller extends controller
             $user['phone'] = $request['msisdn'];
             $user['create_date'] = date('Y-m-d H:i:s');
             $user['id'] = $this->model('users')->insert($user);
+        } else {
+            if($user['blocked']) {
+                return;
+            }
+            if($this->model('messages')->checkSpam($user['id'])) {
+                if(!in_array($user['phone'], [111,222,333,444,555,666,777,888,999])) {
+                    $user['blocked'] = 1;
+                    $this->model('users')->insert($user);
+                    return;
+                }
+            }
         }
         $id = $this->model('virtual_numbers')->getByField('phone', $request['to'])['campaign_id'];
         $active_campaign = $this->model('campaigns')->getById($id);
@@ -49,7 +60,7 @@ class api_controller extends controller
         $row['campaign_id'] = $active_campaign['id'];
         $row['push_date'] = date('Y-m-d H:i:s', strtotime($request['message-timestamp']));
         $row['create_date'] = date('Y-m-d H:i:s');
-        $this->model('messages')->markOtherMessages($user['id'], $active_campaign['id']);
+        $this->model('messages')->markOtherMessages($user['id'], $active_campaign['id'], $user['phone']);
         $this->model('messages')->insert($row);
         exit;
     }
