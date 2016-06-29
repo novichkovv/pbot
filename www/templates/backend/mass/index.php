@@ -21,7 +21,7 @@
                 <div class="portlet-body">
                     <div class="form-group">
                         <label>From *</label>
-                        <select style="width: 100%;" class="select2" name="sms[from]" multiple data-require="1">
+                        <select style="width: 100%;" class="select2" name="sms[from]" data-require="1">
                             <?php if ($numbers): ?>
                                 <?php foreach ($numbers as $number): ?>
                                     <option value="<?php echo $number['phone']; ?>"><?php echo $number['phone']; ?></option>
