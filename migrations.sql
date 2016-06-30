@@ -482,3 +482,12 @@ CREATE TABLE system_settings (
 )ENGINE=MyISAM;
 
 ALTER TABLE users ADD blocked TINYINT NOT NULL DEFAULT 0 AFTER phone;
+
+CREATE TABLE blacklist (
+  id SERIAL PRIMARY KEY,
+  user_id BIGINT UNSIGNED NOT NULL,
+  phone VARCHAR(20) NOT NULL
+)ENGINE=MyISAM;
+
+CREATE INDEX user_id ON blacklist (user_id);
+CREATE INDEX phone ON blacklist (phone);

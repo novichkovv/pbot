@@ -134,14 +134,14 @@ class messages_model extends model
         return $res;
     }
 
-    public function checkSpam($user_id)
+    public function checkSpam($user_id, $recipient)
     {
         if(!$spam_quantity = registry::get('system_settings')['blacklist']) {
             $spam_quantity = 100;
         }
         $stm = $this->pdo->prepare('
-            SELECT COUNT(*) count FROM messages WHERE user_id = :user_id
+            SELECT COUNT(*) count FROM messages WHERE user_id = :user_id AND recipient = :recipient
         ');
-        return ($this->get_row($stm, array('user_id' => $user_id))['count'] >= $spam_quantity);
+        return ($this->get_row($stm, array('user_id' => $user_id, 'recipient' => $recipient))['count'] >= $spam_quantity);
     }
 }
