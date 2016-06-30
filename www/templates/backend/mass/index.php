@@ -69,7 +69,7 @@
                     'callback': function (msg) {
                         ajax_respond(msg,
                             function (respond) { //success
-                                toastr.success('Messages have been sent!')
+                                toastr.success('Messages have been put in queue!')
                             },
                             function (respond) { //fail
                             }

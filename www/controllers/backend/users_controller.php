@@ -47,6 +47,22 @@ class users_controller extends controller
                 echo json_encode($this->getDataTable($params));
                 exit;
                 break;
+
+            case "whitelist":
+                $this->model('users')->insert([
+                    'id' => $_POST['id'],
+                    'blocked' => 0
+                ]);
+                exit;
+                break;
+
+            case "blacklist":
+                $this->model('users')->insert([
+                    'id' => $_POST['id'],
+                    'blocked' => 1
+                ]);
+                exit;
+                break;
         }
     }
 
@@ -59,7 +75,11 @@ class users_controller extends controller
             'u.create_date repCreate_Date',
             'COUNT(m.id) repMessages_Sent',
             'IF(u.blocked, "YES", "NO")',
-            'MAX(push_date) repLast_Message'
+            'MAX(push_date) repLast_Message',
+            'CONCAT(
+            "<a href=\"#", IF(u.blocked = 1, "whitelist","blacklist"), "_modal\" data-toggle=\"modal\" class=\"", IF(u.blocked = 1, "whitelist","blacklist"), " btn btn-outline btn-sm green\" data-id=\"", u.id, "\">
+                ", IF(u.blocked = 1, "Whitelist","Blacklist"),
+            "</a>")'
         ];
         $params['join']['messages'] = [
             'on' => 'm.user_id = u.id AND IF(m.concat, m.concat_count = 1, 1)',

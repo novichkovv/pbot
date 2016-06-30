@@ -44,6 +44,7 @@
                                 </select>
                             </td>
                             <td></td>
+                            <td></td>
                         </tr>
                         <tr>
                             <th>User Name</th>
@@ -51,6 +52,7 @@
                             <th>SMS sent</th>
                             <th>Blocked</th>
                             <th>Last Sms Date</th>
+                            <th></th>
                         </tr>
                         </thead>
                         <tbody>
@@ -62,17 +64,84 @@
         </form>
     </div>
 </div>
+<div class="modal fade" id="whitelist_modal">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Whitelist</h4>
+            </div>
+            <div class="modal-body with-padding">
+                Are You Sure?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="whitelist_btn btn btn-primary">Yes</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="blacklist_modal">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Blacklist</h4>
+            </div>
+            <div class="modal-body with-padding">
+                Are You Sure?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="blacklist_btn btn btn-primary">Yes</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
 <script type="text/javascript">
     $ = jQuery.noConflict();
     $(document).ready(function () {
         ajax_datatable('users_table');
         var $filter_form = $("#filter-form");
         $filter_form.keydown(function(e) {
-            console.log(e);
             if(e.keyCode == 13) {
                 e.preventDefault();
                 $(e.target).change();
             }
+        });
+        $("body").on("click", ".whitelist", function () {
+            var id = $(this).attr('data-id');
+            $(".whitelist_btn").attr('data-id', id);
+        });
+        $("body").on("click", ".blacklist", function () {
+            var id = $(this).attr('data-id');
+            $(".blacklist_btn").attr('data-id', id);
+        });
+
+        $("body").on("click", ".whitelist_btn", function () {
+            var id = $(this).attr('data-id');
+            var params = {
+                'action': 'whitelist',
+                'values': {id: id},
+                'callback': function (msg) {
+                    ajax_datatable('users_table');
+                    $("#whitelist_modal").modal('hide');
+                }
+            };
+            ajax(params);
+
+        });
+        $("body").on("click", ".blacklist_btn", function () {
+            var id = $(this).attr('data-id');
+            var params = {
+                'action': 'blacklist',
+                'values': {id: id},
+                'callback': function (msg) {
+                    ajax_datatable('users_table');
+                    $("#blacklist_modal").modal('hide');
+                }
+            };
+            ajax(params);
         });
 
         $filter_form.submit(function() {
