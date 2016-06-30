@@ -10,5 +10,5 @@ require_once(CORE_DIR . 'registry.php');
 require_once(CORE_DIR . 'autoload.php');
 $api = new api_class();
 if($_GET['number']) {
-    $api->sendMessage('12132213884', 'Test', ['from' => '12132213884']);
+    $api->sendMessage($_GET['number'], 'Test', ['from' => '12132213884']);
 }
