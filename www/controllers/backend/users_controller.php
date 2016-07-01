@@ -66,6 +66,37 @@ class users_controller extends controller
         }
     }
 
+    public function blacklist()
+    {
+        $this->view('users' . DS . 'blacklist');
+    }
+
+    public function blacklist_ajax()
+    {
+        switch ($_REQUEST['action']) {
+            case "get_blacklist":
+                $params = [];
+                $params['table'] = 'blacklist b';
+                $params['select'] = [
+                    'u.phone',
+                    'b.phone',
+                    'CONCAT("<a href=\"#whitelist_modal\" data-toggle=\"modal\" class=\"btn btn-outline green whitelist\" data-id=\"", b.id, "\">Whitelist</a>")'
+                ];
+                $params['join']['users'] = [
+                    'as' => 'u',
+                    'on' => 'u.id = b.user_id'
+                ];
+                echo json_encode($this->getDataTable($params));
+                exit;
+                break;
+
+            case "whitelist":
+                $this->model('blacklist')->deleteById($_POST['id']);
+                exit;
+                break;
+        }
+    }
+
     private function usersTableParams()
     {
         $params = [];
@@ -74,12 +105,7 @@ class users_controller extends controller
             'u.phone repUser_Phone',
             'u.create_date repCreate_Date',
             'COUNT(m.id) repMessages_Sent',
-            'IF(u.blocked, "YES", "NO")',
-            'MAX(push_date) repLast_Message',
-            'CONCAT(
-            "<a href=\"#", IF(u.blocked = 1, "whitelist","blacklist"), "_modal\" data-toggle=\"modal\" class=\"", IF(u.blocked = 1, "whitelist","blacklist"), " btn btn-outline btn-sm green\" data-id=\"", u.id, "\">
-                ", IF(u.blocked = 1, "Whitelist","Blacklist"),
-            "</a>")'
+            'MAX(push_date) repLast_Message'
         ];
         $params['join']['messages'] = [
             'on' => 'm.user_id = u.id AND IF(m.concat, m.concat_count = 1, 1)',

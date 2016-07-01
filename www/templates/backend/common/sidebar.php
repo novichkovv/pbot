@@ -22,7 +22,7 @@
                     <span class="selected"></span>
                 </a>
             </li>
-            <li class="start <?php if(registry::get('route_parts')[0] == 'users') echo 'active'; ?>">
+            <li class="start <?php if(registry::get('route_parts')[0] == 'users' && registry::get('route_parts')[1] != 'blacklist') echo 'active'; ?>">
                 <a href="<?php echo SITE_DIR; ?>users/">
                     <i class="icon-users"></i>
                     <span class="title">Users</span>
@@ -33,6 +33,13 @@
                 <a href="<?php echo SITE_DIR; ?>mass/">
                     <i class="icon-envelope"></i>
                     <span class="title">Mass SMS</span>
+                    <span class="selected"></span>
+                </a>
+            </li>
+            <li class="start <?php if(registry::get('route_parts')[1] == 'blacklist') echo 'active'; ?>">
+                <a href="<?php echo SITE_DIR; ?>users/blacklist/">
+                    <i class="icon-list"></i>
+                    <span class="title">Blacklist</span>
                     <span class="selected"></span>
                 </a>
             </li>

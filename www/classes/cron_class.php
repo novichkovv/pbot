@@ -7,6 +7,8 @@
  */
 class cron_class extends base
 {
+    private $blacklist = [];
+
     public function __construct()
     {
         if(!$tmp = registry::get('system_settings')['global_delay']) {
@@ -28,6 +30,12 @@ class cron_class extends base
             $delay = 30;
         }
         define('MIN_DELAY', $delay); //in seconds
+        $blacklist = [];
+        foreach ($this->model('blacklist')->getAll() as $v) {
+            $blacklist[$v['user_id']][$v['phone']] = true;
+        }
+        $this->blacklist = $blacklist;
+
     }
 
     public function init()
@@ -369,7 +377,7 @@ class cron_class extends base
                     'campaign_id' => $user_to_keep['campaign_id']
                 );
                 $this->model('user_phrases')->insert(['user_id' => $user_to_keep['user_id'], 'phrase_id' => $global['id'], 'create_date' => date('Y-m-d H:i:s'), 'virtual_number' => $user_to_keep['recipient']]);
-                if(!$this->model('users')->getById($res['user_id'])['blocked']) {
+                if(!$this->blacklist[$res['user_id']][$res['recipient']]) {
                     $this->putInQueue($res);
                 }
                 break;
@@ -429,7 +437,7 @@ class cron_class extends base
                         'campaign_id' => $user_to_keep['campaign_id']
                     );
                     $this->model('user_phrases')->insert(['user_id' => $user_to_keep['user_id'], 'phrase_id' => $phrase['id'], 'create_date' => date('Y-m-d H:i:s'), 'virtual_number' => $user_to_keep['recipient']]);
-                    if(!$this->model('users')->getById($res['user_id'])['blocked']) {
+                    if(!$this->blacklist[$res['user_id']][$res['recipient']]) {
                         $this->putInQueue($res);
                     }
                     break;

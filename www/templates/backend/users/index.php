@@ -36,23 +36,13 @@
                                     <input type="hidden" data-id="users_table" name="u.create_date" data-sign="between" class="filter-field range-hidden-input">
                                 </div>
                             </td>
-                            <td>
-                                <select class="form-control filter-field filter-select" data-sign="=" name="u.blocked">
-                                    <option value=""></option>
-                                    <option value="0">No</option>
-                                    <option value="1">Yes</option>
-                                </select>
-                            </td>
-                            <td></td>
                             <td></td>
                         </tr>
                         <tr>
                             <th>User Name</th>
                             <th>Date</th>
                             <th>SMS sent</th>
-                            <th>Blocked</th>
                             <th>Last Sms Date</th>
-                            <th></th>
                         </tr>
                         </thead>
                         <tbody>
