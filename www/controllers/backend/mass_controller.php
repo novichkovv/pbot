@@ -23,8 +23,11 @@ class mass_controller extends controller
                 } else {
                     $delay = 1;
                 }
-                $send_time = date('Y-m-d H:i:s', time() + $delay);
+                $send_time = time() + $delay;
                 $to_arr = explode(',', $_POST['sms']['to']);
+                $count_numbers = count($_POST['sms']['from']);
+                $count_phones = count($to_arr);
+                $offset = round($count_phones/$count_numbers);
 //                $numbers = [];
 //                $this->model('virtual_numbers')->getByFieldIn('phone', $_POST['sms']['from'], true);
 //                foreach ( as $v) {
@@ -44,8 +47,15 @@ class mass_controller extends controller
                     }
                 }
                 $queues = [];
-                $from = $this->model('virtual_numbers')->getByField('phone', $_POST['sms']['from']);
-                foreach ($to_arr as $to) {
+//                print_r($to);
+//                exit;
+                $from = $this->model('virtual_numbers')->getByField('phone', $_POST['sms']['from'][0]);
+                $i = 1;
+                foreach ($to_arr as $k => $to) {
+                    if($offset*$i == $k && isset($_POST['sms']['from'][$i])) {
+                        $from = $this->model('virtual_numbers')->getByField('phone', $_POST['sms']['from'][$i]);
+                        $i ++;
+                    }
                     $to = trim($to);
                     if(is_numeric($to)) {
                         $user = $users[$to];
@@ -54,13 +64,15 @@ class mass_controller extends controller
                         $queue['phone'] = $user['phone'];
                         $queue['user_id'] = $user['id'];
                         $queue['campaign_id'] = $from['campaign_id'];
-                        $queue['send_time'] = $send_time;
+                        $queue['send_time'] = date('Y-m-d H:i:s', $send_time + $k*2);
                         $queue['sms'] = trim($_POST['sms']['sms']);
                         $queue['global_plot'] = 1;
                         $queue['create_date'] = $date;
                         $queues[] = $queue;
                     }
                 }
+//                print_r($queues);
+//                exit;
 //                foreach ($numbers as $from) {
 //
 //                }
