@@ -101,13 +101,51 @@ class cron_class extends base
                 }
             }
         }
+        $m = [];
         foreach ($messages as $message) {
-            $this->manageMessage($message);
+            $m[$message['user_id'] . $message['recipient']][] = $message;
+        }
+        foreach ($m as $message) {
+            if(count($message) > 1) {
+                if(count($message) > 2) {
+                    foreach ($message as $k => $v) {
+                        $check[strtotime($v['push_date'])] = $k;
+                    }
+                    ksort($check);
+                    $index = array_shift($check);
+                    $row = [];
+                    $row['id'] = $message[$index];
+                    $row['message_status'] = 1;
+                    $this->model('messages')->insert($row);
+                    unset($message[$index]);
+                }
+
+                $res = [
+                    'phone' => $message[0]['phone'],
+                    'user_id' => $message[0]['user_id'],
+                    'status' => $message[0]['message_status'],
+                    'id' => $message[0]['id'],
+                    'recipient' => $message[0]['recipient'],
+                    'campaign_id' => $message[0]['campaign_id']
+                ];
+                $res['text'] = '';
+                foreach ($message as $parts) {
+                    $res['text'] .= $parts['text'] . ' ';
+                    if(!$res['time'] || $res['time'] < $parts['time']) {
+                        $res['time'] = $parts['time'];
+                    }
+                }
+            } else {
+                $res = $message[array_keys($message)[0]];
+            }
+            $this->manageMessage($res);
         }
     }
 
     private function manageMessage($message)
     {
+//        print_r($message);
+//        exit;
         if($this->model('queues')->getByFields(['user_id' => $message['user_id'], 'sent' => 0, 'campaign_id' => $message['campaign_id'], 'recipient' => $message['recipient']])) {
             $this->model('messages')->markOtherMessages($message['user_id'], $message['campaign_id'], $message['recipient']);
             return;
@@ -242,6 +280,24 @@ class cron_class extends base
             $delay = MIN_DELAY;
         }
         $this->writeLog('test', $delay);
+
+        if(false !== strpos($sms, '%GEO%')) {
+            $state = $this->model('state_codes')->getByField('state_code', substr($message['phone'], 1, 3))['state'];
+            if(!$state) {
+                $state = "I'm close to you";
+            }
+            $sms = str_replace('%GEO%', $state, $sms);
+        }
+        if(false !== strpos($sms, '%COUNTY%')) {
+            $county = $this->model('county_codes')->getByField('county_code', substr($message['phone'], 1, 3))['county'];
+            if (!$county) {
+                $county = $this->model('state_codes')->getByField('state_code', substr($message['phone'], 1, 3))['state'];
+            }
+            if(!$county) {
+                $county = "I'm close to you";
+            }
+            $sms = str_replace('%COUNTY%', $county, $sms);
+        }
         @preg_match_all("/\{[^\}]*\}/", $sms, $matches);
         if($matches[0]) {
             foreach ($matches[0] as $match) {
@@ -255,13 +311,6 @@ class cron_class extends base
                 $choice = $arr[array_rand($arr)];
                 $sms = str_replace($match, $choice, $sms);
             }
-        }
-        if(false !== strpos($sms, '%GEO%')) {
-            $state = $this->model('state_codes')->getByField('state_code', substr($message['phone'], 1, 3))['state'];
-            if(!$state) {
-                $state = "I'm close to you";
-            }
-            $sms = str_replace('%GEO%', $state, $sms);
         }
         $res = array(
             'sms' => $sms,
@@ -360,11 +409,21 @@ class cron_class extends base
                     }
                 }
                 if(false !== strpos($sms, '%GEO%')) {
-                    $state = $this->model('state_codes')->getByField('state_code', substr($user_to_keep['recipient'], 1, 3))['state'];
+                    $state = $this->model('state_codes')->getByField('state_code', substr($user_to_keep['phone'], 1, 3))['state'];
                     if(!$state) {
                         $state = "I'm close to you";
                     }
                     $sms = str_replace('%GEO%', $state, $sms);
+                }
+                if(false !== strpos($sms, '%COUNTY%')) {
+                    $county = $this->model('county_codes')->getByField('county_code', substr($user_to_keep['phone'], 1, 3))['county'];
+                    if (!$county) {
+                        $county = $this->model('state_codes')->getByField('state_code', substr($user_to_keep['phone'], 1, 3))['state'];
+                    }
+                    if(!$county) {
+                        $county = "I'm close to you";
+                    }
+                    $sms = str_replace('%COUNTY%', $county, $sms);
                 }
                 $res = array(
                     'sms' => $sms,
@@ -406,11 +465,21 @@ class cron_class extends base
 
                     $sms = strtr($phrase['reply'], $macro);
                     if(false !== strpos($sms, '%GEO%')) {
-                        $state = $this->model('state_codes')->getByField('state_code', substr($user_to_keep['recipient'], 1, 3))['state'];
+                        $state = $this->model('state_codes')->getByField('state_code', substr($user_to_keep['phone'], 1, 3))['state'];
                         if(!$state) {
                             $state = "I'm close to you";
                         }
                         $sms = str_replace('%GEO%', $state, $sms);
+                    }
+                    if(false !== strpos($sms, '%COUNTY%')) {
+                        $county = $this->model('county_codes')->getByField('county_code', substr($user_to_keep['phone'], 1, 3))['county'];
+                        if (!$county) {
+                            $county = $this->model('state_codes')->getByField('state_code', substr($user_to_keep['phone'], 1, 3))['state'];
+                        }
+                        if(!$county) {
+                            $county = "I'm close to you";
+                        }
+                        $sms = str_replace('%COUNTY%', $county, $sms);
                     }
                     @preg_match_all("/\{[^\}]*\}/", $sms, $matches);
                     if($matches[0]) {
