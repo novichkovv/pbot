@@ -49,7 +49,12 @@
                                             <input type="text" name="settings[blacklist]" class="form-control" value="<?php echo $settings['blacklist']; ?>">
                                         </div>
                                     </div>
-
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Switch to a new campaign after (days)</label>
+                                        <div class="col-md-6">
+                                            <input type="text" name="settings[switch_days]" class="form-control" value="<?php echo $settings['switch_days']; ?>">
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </form>

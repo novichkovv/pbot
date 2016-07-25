@@ -19,8 +19,23 @@ class campaigns_controller extends controller
 //            header('Location: ' . SITE_DIR . 'campaigns/');
 //            exit;
 //        }
-        $this->render('campaigns', $this->model('campaigns')->getAll());
+        $this->render('campaigns', $this->model('campaigns')->getAll('sort_order'));
         $this->view('campaigns' . DS . 'index');
+    }
+
+    public function index_ajax()
+    {
+        switch ($_REQUEST['action']) {
+            case "change_order":
+                foreach ($_POST['order'] as $k => $v) {
+                    $row = [];
+                    $row['id'] = $v['id'];
+                    $row['sort_order'] = $k;
+                    $this->model('campaigns')->insert($row);
+                }
+                exit;
+                break;
+        }
     }
 
     public function add()

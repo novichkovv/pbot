@@ -21,6 +21,49 @@ class api_controller extends controller
             $user['create_date'] = date('Y-m-d H:i:s');
             $user['id'] = $this->model('users')->insert($user);
         } else {
+            $first_message = $this->model('messages')->getByField('recipient', $request['to'], false, 'push_date', 1);
+            if($first_message && time() - registry::get('system_settings')['switch_days']*24*3600 > strtotime($first_message['push_date'])) {
+                $campaign = $this->model('virtual_numbers')->getByField('phone', $request['to'])['campaign_id'];
+                if(!$campaign) {
+                    $campaign = $this->model('campaigns')->getAll()[1]['id'];
+                }
+                $check = false;
+                foreach ($this->model('campaigns')->getAll('sort_order') as $v) {
+                    if($check) {
+                        $new_campaign = $v;
+                        break;
+                    }
+                    if($v['id'] == $campaign) {
+                        $check = true;
+                    }
+                }
+                if(!$new_campaign['id']) {
+                    $new_campaign = $this->model('campaigns')->getAll('sort_order', 1)[0];
+                }
+                $numbers = $this->model('virtual_numbers')->getByField('campaign_id', $new_campaign['id'], true);
+                if($numbers) {
+                    $new_number = $numbers[rand(0, count($numbers) - 1)]['phone'];
+                    $rows = [];
+                    $date = date('Y-m-d H:i:s');
+                    foreach ($this->model('phrases')->getUserPhrasesByStatus($user['id'], $request['to']) as $phrase) {
+                        foreach ($this->model('phrases')->getByFields(['status_id' => $phrase['status_id'], 'campaign_id' => $new_campaign['id']], true, 'sort_order, id', $phrase['count']) as $v) {
+                            $rows[] = [
+                                'phrase_id' => $v['id'],
+                                'virtual_number' => $new_number,
+                                'create_date' => $date,
+                                'user_id' => $user['id']
+                            ];
+                        }
+                    }
+                    if($rows) {
+                        $this->model('user_phrases')->insertRows($rows);
+                    }
+                    $request['to'] = $new_number;
+                } else {
+                    echo 'no numbers';
+                }
+
+            }
             if($this->model('blacklist')->getByFields(['user_id' => $user['id'], 'phone' => $request['to']])['id']) {
                 return;
             }
@@ -35,6 +78,9 @@ class api_controller extends controller
             }
         }
         $id = $this->model('virtual_numbers')->getByField('phone', $request['to'])['campaign_id'];
+        if(!$id) {
+            $id = 1;
+        }
         $active_campaign = $this->model('campaigns')->getById($id);
         $row['user_id'] = $user['id'];
         $row['message_id'] = $request['messageId'];

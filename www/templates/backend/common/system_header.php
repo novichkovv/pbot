@@ -56,6 +56,7 @@
     <script src="<?php echo SITE_DIR; ?>assets/global/plugins/jquery.cokie.min.js" type="text/javascript"></script>
     <script src="<?php echo SITE_DIR; ?>assets/global/plugins/uniform/jquery.uniform.min.js" type="text/javascript"></script>
     <script src="<?php echo SITE_DIR; ?>assets/global/plugins/bootstrap-switch/js/bootstrap-switch.min.js" type="text/javascript"></script>
+    <script src="<?php echo SITE_DIR; ?>js/jquery.nestable.js" type="text/javascript"></script>
     <!-- END CORE PLUGINS -->
     <!-- BEGIN PAGE LEVEL PLUGINS -->
     <script src="<?php echo SITE_DIR; ?>assets/global/plugins/bootstrap-datepicker/js/bootstrap-datepicker.js" type="text/javascript"></script>

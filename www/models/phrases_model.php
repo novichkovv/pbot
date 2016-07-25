@@ -106,4 +106,20 @@ class phrases_model extends model
         $stm->execute();
 
     }
+
+    public function getUserPhrasesByStatus($user_id, $virtual_number)
+    {
+        $stm = $this->pdo->prepare('
+            SELECT
+                COUNT(p.status_id) count, p.status_id
+            FROM
+                user_phrases up
+                    JOIN
+                phrases p ON up.phrase_id = p.id
+            WHERE
+                user_id = :user_id AND virtual_number = :virtual_number
+            GROUP BY p.status_id
+        ');
+        return $this->get_all($stm, array('user_id' => $user_id, 'virtual_number' => $virtual_number));
+    }
 }

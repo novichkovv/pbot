@@ -839,3 +839,6 @@ INSERT INTO `pbot`.`county_codes` (`county_code`, `county`) VALUES ('979', 'Coll
 INSERT INTO `pbot`.`county_codes` (`county_code`, `county`) VALUES ('980', 'Charlotte');
 INSERT INTO `pbot`.`county_codes` (`county_code`, `county`) VALUES ('984', 'Raleigh');
 INSERT INTO `pbot`.`county_codes` (`county_code`, `county`) VALUES ('985', 'New Orleans');
+
+
+ALTER TABLE campaigns ADD sort_order INT NOT NULL DEFAULT 0 AFTER id;

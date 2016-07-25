@@ -376,7 +376,7 @@ class cron_class extends base
         }
         foreach ($to_keep as $user_to_keep) {
             $count_1 ++;
-            if ($user_to_keep['global_plot'] >= 1 || time() - strtotime($user_to_keep['send_time']) < GLOBAL_DELAY  || time() - strtotime($user_to_keep['send_time']) > GLOBAL_DELAY + 5*60) {
+            if ($user_to_keep['global_plot'] >= 1 || time() - strtotime($user_to_keep['send_time']) < GLOBAL_DELAY  || time() - strtotime($user_to_keep['send_time']) > GLOBAL_DELAY + 5*60 || $user_to_keep['sent'] == 0) {
                 continue;
             }
             $count_2 ++;
