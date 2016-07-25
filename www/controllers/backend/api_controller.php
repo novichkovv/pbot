@@ -21,7 +21,7 @@ class api_controller extends controller
             $user['create_date'] = date('Y-m-d H:i:s');
             $user['id'] = $this->model('users')->insert($user);
         } elseif(registry::get('system_settings')['switch_days']) {
-            $first_message = $this->model('messages')->getByField('recipient', $request['to'], false, 'push_date', 1);
+            $first_message = $this->model('messages')->getByFields(['recipient' => $request['to'], 'user_id' => $user['id']], false, 'push_date', 1);
             if($first_message && time() - registry::get('system_settings')['switch_days']*24*3600 > strtotime($first_message['push_date'])) {
                 $campaign = $this->model('virtual_numbers')->getByField('phone', $request['to'])['campaign_id'];
                 if(!$campaign) {
