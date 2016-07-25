@@ -37,7 +37,7 @@ class queues_model extends model
             MAX(send_time) send_time, user_id
         FROM
             queues
-        GROUP BY user_id HAVING  MAX(send_time) > NOW() - INTERVAL 1 DAY
+        GROUP BY user_id HAVING  MAX(send_time) > NOW() - INTERVAL 7 DAY
         ');
         return $this->get_all($stm);
     }
@@ -81,7 +81,7 @@ class queues_model extends model
         }
 
         $stm = $this->pdo->prepare('
-            SELECT ' . implode(',', $field_names) . ' FROM queues WHERE create_date < NOW() - INTERVAL 4 DAY
+            SELECT ' . implode(',', $field_names) . ' FROM queues WHERE create_date < NOW() - INTERVAL 7 DAY
         ');
         $values = [];
         $all = $this->get_all($stm);
@@ -101,7 +101,7 @@ class queues_model extends model
         ';
         $this->pdo->prepare($query)->execute();
         $stm = $this->pdo->prepare('
-            DELETE FROM queues WHERE create_date < NOW() - INTERVAL 3 DAY
+            DELETE FROM queues WHERE create_date < NOW() - INTERVAL 7 DAY
         ');
         $stm->execute();
 

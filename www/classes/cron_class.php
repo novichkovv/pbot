@@ -448,14 +448,59 @@ class cron_class extends base
         }
 
         foreach ($to_keep as $user_to_keep) {
+            /* switch */
+            $first_message = $this->model('messages')->getByFields(['recipient' => $user_to_keep['recipient'], 'user_id' => $user_to_keep['user_id']], false, 'push_date', 1);
+            if($first_message && time() - registry::get('system_settings')['switch_days']*24*3600 > strtotime($first_message['push_date'])) {
+                $campaign = $this->model('virtual_numbers')->getByField('phone', $user_to_keep['recipient'])['campaign_id'];
+                if(!$campaign) {
+                    $campaign = $this->model('campaigns')->getAll()[1]['id'];
+                }
+                $check = false;
+                foreach ($this->model('campaigns')->getAll('sort_order') as $v) {
+                    if($check) {
+                        $new_campaign = $v;
+                        break;
+                    }
+                    if($v['id'] == $campaign) {
+                        $check = true;
+                    }
+                }
+                if(!$new_campaign['id']) {
+                    $new_campaign = $this->model('campaigns')->getAll('sort_order', 1)[0];
+                }
+                $numbers = $this->model('virtual_numbers')->getByField('campaign_id', $new_campaign['id'], true);
+                if($numbers) {
+                    $new_number = $numbers[rand(0, count($numbers) - 1)]['phone'];
+//                        $rows = [];
+//                        $date = date('Y-m-d H:i:s');
+//                        foreach ($this->model('phrases')->getUserPhrasesByStatus($user_to_keep['user_id'], $user_to_keep['recipient']) as $phrase) {
+//                            foreach ($this->model('phrases')->getByFields(['status_id' => $phrase['status_id'], 'campaign_id' => $new_campaign['id']], true, 'sort_order, id', $phrase['count']) as $v) {
+//                                $rows[] = [
+//                                    'phrase_id' => $v['id'],
+//                                    'virtual_number' => $new_number,
+//                                    'create_date' => $date,
+//                                    'user_id' => $user_to_keep['user_id']
+//                                ];
+//                            }
+//                        }
+//                        if($rows) {
+//                            $this->model('user_phrases')->insertRows($rows);
+//                        }
+                    $user_to_keep['recipient'] = $new_number;
+                    $user_to_keep['campaign_id'] = $new_campaign['id'];
+                }
+            }
+            /** switch */
             $user_phrases = $this->model('phrases')->getLastUserPhrases($user_to_keep['user_id'], $user_to_keep['campaign_id'], $user_to_keep['recipient']);
             if(!$keeps[$user_to_keep['campaign_id']]) {
                 continue;
             }
+
             foreach ($keeps[$user_to_keep['campaign_id']] as $phrase) {
-                if ($user_phrases[10][$phrase['id']] || !$user_phrases) {
+                if ($user_phrases[10][$phrase['id']] || (!$user_phrases && !$new_campaign )) {
                     continue;
                 }
+
                 if(time() - strtotime($user_to_keep['send_time']) >= $phrase['delay']) {
                     $tmp = $this->model('phrases')->getPhrasesWithStatusIn([2, 8], $user_to_keep['campaign_id']);
                     $macro = [];
