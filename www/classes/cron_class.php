@@ -279,7 +279,6 @@ class cron_class extends base
         if(!$delay) {
             $delay = MIN_DELAY;
         }
-        $this->writeLog('test', $delay);
 
         if(false !== strpos($sms, '%GEO%')) {
             $state = $this->model('state_codes')->getByField('state_code', substr($message['phone'], 1, 3))['state'];
@@ -327,6 +326,7 @@ class cron_class extends base
 
     public function putInQueue(array $message)
     {
+        print_r($message);
         if($message['sms']) {
             if ($message['message_id']) {
                 $row = [];
