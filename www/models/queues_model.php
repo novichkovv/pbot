@@ -37,10 +37,23 @@ class queues_model extends model
             MAX(send_time) send_time, user_id
         FROM
             queues
-        GROUP BY user_id HAVING  MAX(send_time) > NOW() - INTERVAL 8 DAY
+        GROUP BY user_id HAVING  MAX(send_time) > NOW() - INTERVAL 9 DAY
         ');
         return $this->get_all($stm);
     }
+
+    public function getFollowUpUsers()
+    {
+        $stm = $this->pdo->prepare('
+        SELECT
+            MAX(send_time) send_time, user_id
+        FROM
+            queues
+        GROUP BY user_id HAVING  DATE(MAX(send_time)) = NOW() - INTERVAL 7 DAY
+        ');
+        return $this->get_all($stm);
+    }
+
 
     public function getToKeepAlive($campaign_id, $today_users)
     {
@@ -81,7 +94,7 @@ class queues_model extends model
         }
 
         $stm = $this->pdo->prepare('
-            SELECT ' . implode(',', $field_names) . ' FROM queues WHERE create_date < NOW() - INTERVAL 7 DAY
+            SELECT ' . implode(',', $field_names) . ' FROM queues WHERE create_date < NOW() - INTERVAL 3 DAY
         ');
         $values = [];
         $all = $this->get_all($stm);
@@ -101,7 +114,7 @@ class queues_model extends model
         ';
         $this->pdo->prepare($query)->execute();
         $stm = $this->pdo->prepare('
-            DELETE FROM queues WHERE create_date < NOW() - INTERVAL 7 DAY
+            DELETE FROM queues WHERE create_date < NOW() - INTERVAL 3 DAY
         ');
         $stm->execute();
 
