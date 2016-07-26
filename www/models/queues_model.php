@@ -37,7 +37,7 @@ class queues_model extends model
             MAX(send_time) send_time, user_id
         FROM
             queues
-        GROUP BY user_id HAVING  MAX(send_time) > NOW() - INTERVAL 7 DAY
+        GROUP BY user_id HAVING  MAX(send_time) > NOW() - INTERVAL 8 DAY
         ');
         return $this->get_all($stm);
     }
