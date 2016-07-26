@@ -21,9 +21,11 @@ class api_controller extends controller
             $user['create_date'] = date('Y-m-d H:i:s');
             $user['id'] = $this->model('users')->insert($user);
         } elseif(registry::get('system_settings')['switch_days']) {
+            echo 1;
             $first_message = $this->model('messages')->getByFields(['recipient' => $request['to'], 'user_id' => $user['id']], false, 'push_date', 1);
             if($first_message && time() - registry::get('system_settings')['switch_days']*24*3600 > strtotime($first_message['push_date'])) {
                 $campaign = $this->model('virtual_numbers')->getByField('phone', $request['to'])['campaign_id'];
+                print_r($campaign);
                 if(!$campaign) {
                     $campaign = $this->model('campaigns')->getAll()[1]['id'];
                 }
@@ -37,6 +39,8 @@ class api_controller extends controller
                         $check = true;
                     }
                 }
+                print_r($new_campaign);
+                echo 2;
                 if(!$new_campaign['id']) {
                     $new_campaign = $this->model('campaigns')->getAll('sort_order', 1)[0];
                 }
@@ -55,8 +59,9 @@ class api_controller extends controller
                             ];
                         }
                     }
+                    print_r($rows);
                     if($rows) {
-                        $this->model('user_phrases')->insertRows($rows);
+//                        $this->model('user_phrases')->insertRows($rows);
                     }
                     $request['to'] = $new_number;
                 } else {
