@@ -454,6 +454,7 @@ class cron_class extends base
             $user_phrases = $this->model('phrases')->getLastUserPhrases($user_to_keep['user_id'], $user_to_keep['campaign_id'], $user_to_keep['recipient']);
             if($phrase = $follow_up[$user_to_keep['campaign_id']]) {
                 print_r($phrase);
+                echo time() - strtotime($user_to_keep['send_time']);
                 if(time() - strtotime($user_to_keep['send_time']) >= $phrase['delay']) {
                     echo 1;
                     $campaign = $this->model('virtual_numbers')->getByField('phone', $user_to_keep['recipient'])['campaign_id'];
