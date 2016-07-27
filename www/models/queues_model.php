@@ -51,7 +51,23 @@ class queues_model extends model
             queues
         GROUP BY user_id HAVING  DATE(MAX(send_time)) = NOW() - INTERVAL 7 DAY
         ');
-        return $this->get_all($stm);
+        $today_users =  $this->get_all($stm);
+        if(!$today_users) {
+            return [];
+        }
+        $in = [];
+        foreach ($today_users as $v) {
+            $v['send_time'] = '"' . $v['send_time'] . '"';
+            $in[] = '(' .implode(',', $v) . ')';
+        }
+        $stm = $this->pdo->prepare('
+            SELECT
+                *
+            FROM queues
+                WHERE (send_time, user_id) IN (' . implode(',', $in) . ')
+        ');
+        $res = $this->get_all($stm);
+        return $res;
     }
 
 
@@ -94,7 +110,7 @@ class queues_model extends model
         }
 
         $stm = $this->pdo->prepare('
-            SELECT ' . implode(',', $field_names) . ' FROM queues WHERE create_date < NOW() - INTERVAL 3 DAY
+            SELECT ' . implode(',', $field_names) . ' FROM queues WHERE create_date < NOW() - INTERVAL 8 DAY
         ');
         $values = [];
         $all = $this->get_all($stm);
@@ -114,7 +130,7 @@ class queues_model extends model
         ';
         $this->pdo->prepare($query)->execute();
         $stm = $this->pdo->prepare('
-            DELETE FROM queues WHERE create_date < NOW() - INTERVAL 3 DAY
+            DELETE FROM queues WHERE create_date < NOW() - INTERVAL 8 DAY
         ');
         $stm->execute();
 

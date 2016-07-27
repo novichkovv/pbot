@@ -453,10 +453,7 @@ class cron_class extends base
         foreach ($to_keep as $user_to_keep) {
             $user_phrases = $this->model('phrases')->getLastUserPhrases($user_to_keep['user_id'], $user_to_keep['campaign_id'], $user_to_keep['recipient']);
             if($phrase = $follow_up[$user_to_keep['campaign_id']]) {
-                print_r($phrase);
-                echo time() - strtotime($user_to_keep['send_time']);
                 if(time() - strtotime($user_to_keep['send_time']) >= $phrase['delay']) {
-                    echo 1;
                     $campaign = $this->model('virtual_numbers')->getByField('phone', $user_to_keep['recipient'])['campaign_id'];
                     if(!$campaign) {
                         $campaign = $this->model('campaigns')->getAll()[0]['id'];
@@ -531,6 +528,7 @@ class cron_class extends base
 //                    $this->model('user_phrases')->insert(['user_id' => $user_to_keep['user_id'], 'phrase_id' => $phrase['id'], 'create_date' => date('Y-m-d H:i:s'), 'virtual_number' => $user_to_keep['recipient']]);
                     if(!$this->blacklist[$res['user_id']][$res['recipient']]) {
                         $this->putInQueue($res);
+
                     }
                     break;
                 }
