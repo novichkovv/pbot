@@ -335,6 +335,13 @@ class cron_class extends base
             }
             $message['create_date'] = date('Y-m-d H:i:s');
             $this->model('queues')->insert($message);
+        } else {
+            if ($message['message_id']) {
+                $row = [];
+                $row['message_status'] = 2;
+                $row['id'] = $message['message_id'];
+                $this->model('messages')->insert($row);
+            }
         }
     }
 
