@@ -144,4 +144,26 @@ class messages_model extends model
         ');
         return ($this->get_row($stm, array('user_id' => $user_id, 'recipient' => $recipient))['count'] >= $spam_quantity);
     }
+
+    public function getCountUserMessages()
+    {
+        $stm = $this->pdo->prepare('
+            SELECT
+                COUNT(id) qty, DATE(push_date) date, user_id
+            FROM
+                messages
+            WHERE
+                push_date < NOW()
+                    AND push_date > NOW() - INTERVAL 20 DAY
+            GROUP BY user_id
+        ');
+        $res = [];
+        foreach ($this->get_all($stm) as $v) {
+            $res[$v['date']][] = $v['qty'];
+        }
+        foreach ($res as $k => $v) {
+            $res[$k] = array_sum($v)/count($v);
+        }
+        return $res;
+    }
 }

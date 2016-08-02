@@ -9,6 +9,18 @@ class users_controller extends controller
 {
     public function index()
     {
+        $res = [];
+        $stats = $this->model('messages')->getCountUserMessages();
+        for($i = time() - 20*24*3600; $i <= time(); $i += 24*3600) {
+            $date = date('Y-m-d', $i);
+            if($stats[$date]) {
+                $res[] = '"' . date('Y,m,d', strtotime($date)) . '" : "' . $stats[$date] . '"';
+            } else {
+                $res[] = '"' . date('Y,m,d', strtotime($date)) . '" : "0"';
+            }
+        }
+        $graph = '{' . implode(',', $res) . '}';
+        $this->render('graph', $graph);
         if(isset($_POST['download_btn'])) {
             $params = $this->usersTableParams($_POST['download']);
             if(is_array($_POST['params'])) {
@@ -105,7 +117,7 @@ class users_controller extends controller
             'u.phone repUser_Phone',
             'u.create_date repCreate_Date',
             'COUNT(m.id) repMessages_Sent',
-            'MAX(push_date) repLast_Message'
+            'CONVERT_TZ(MAX(push_date), "GMT", "EST") repLast_Message'
         ];
         $params['join']['messages'] = [
             'on' => 'm.user_id = u.id AND IF(m.concat, m.concat_count = 1, 1)',
