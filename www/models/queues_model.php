@@ -135,4 +135,26 @@ class queues_model extends model
         $stm->execute();
 
     }
+
+    public function getCountUserReplies()
+    {
+        $stm = $this->pdo->prepare('
+            SELECT
+                COUNT(id) qty, DATE(send_time) date, user_id
+            FROM
+                queues
+            WHERE
+                send_time < NOW()
+                    AND send_time > NOW() - INTERVAL 8 DAY
+            GROUP BY user_id
+        ');
+        $res = [];
+        foreach ($this->get_all($stm) as $v) {
+            $res[$v['date']][] = $v['qty'];
+        }
+        foreach ($res as $k => $v) {
+            $res[$k] = array_sum($v)/count($v);
+        }
+        return $res;
+    }
 }

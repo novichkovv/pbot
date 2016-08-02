@@ -178,7 +178,7 @@
 
         $(function() {
 //            var arr = {"2016, 07,18":"23","2016, 07,19":"37","2016, 07,20":"13","2016, 07,21":"24","2016, 07,22":"20","2016, 07,23":"5","2016, 07,24":"8","2016, 07,25":"13","2016, 07,26":"17","2016, 07,27":"20","2016, 07,28":"18","2016, 07,29":"5","2016, 07,30":"19","2016, 07,31":"12","2016, 08,01":"21","2016, 08,02":"6"};
-            var arr = <?php echo $graph; ?>;
+            var arr = <?php echo $graph[0]; ?>;
             var n = 0;
             var d2 = [];
             for(var i in arr)
@@ -189,18 +189,18 @@
             }
             var date_end = new Date(i).getTime();
 
-//            var arr2 = <?php //echo $unsigned; ?>//;
-//            var d1 = [];
-//            for(var i in arr)
-//            {
-//                d1.push([new Date(i).getTime(), arr2[i] ? arr2[i] : 0]);
-//            }
+            var arr2 = <?php echo $graph[1]; ?>;
+            var d1 = [];
+            for(var i in arr)
+            {
+                d1.push([new Date(i).getTime(), arr2[i] ? arr2[i] : 0]);
+            }
 
             // A null signifies separate line segments
 
 
 
-            $.plot("#placeholder", [{  data: d2, label: 'AVG SMS per User'} ]  ,{
+            $.plot("#placeholder", [{  data: d2, label: 'AVG SMS per User'}, {  data: d1, label: 'AVG Reply per User'} ]  ,{
                     xaxis: {
                         min: date_start,
                         max: date_end,

@@ -19,7 +19,18 @@ class users_controller extends controller
                 $res[] = '"' . date('Y,m,d', strtotime($date)) . '" : "0"';
             }
         }
-        $graph = '{' . implode(',', $res) . '}';
+        $graph[] = '{' . implode(',', $res) . '}';
+        $res = [];
+        $stats = $this->model('queues')->getCountUserReplies();
+        for($i = time() - 8*24*3600; $i <= time(); $i += 24*3600) {
+            $date = date('Y-m-d', $i);
+            if($stats[$date]) {
+                $res[] = '"' . date('Y,m,d', strtotime($date)) . '" : "' . $stats[$date] . '"';
+            } else {
+                $res[] = '"' . date('Y,m,d', strtotime($date)) . '" : "0"';
+            }
+        }
+        $graph[] = '{' . implode(',', $res) . '}';
         $this->render('graph', $graph);
         if(isset($_POST['download_btn'])) {
             $params = $this->usersTableParams($_POST['download']);
