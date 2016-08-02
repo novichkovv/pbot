@@ -36,6 +36,8 @@
     <link href="<?php echo SITE_DIR; ?>assets/admin/layout/css/layout.min.css" rel="stylesheet" type="text/css"/>
     <link href="<?php echo SITE_DIR; ?>assets/admin/layout/css/themes/default.css" rel="stylesheet" type="text/css" id="style_color"/>
     <link href="<?php echo SITE_DIR; ?>assets/admin/layout/css/custom.css" rel="stylesheet" type="text/css"/>
+    <link href="<?php echo SITE_DIR; ?>assets/global/plugins/select2/select2.css" rel="stylesheet" type="text/css"/>
+    <link href="<?php echo SITE_DIR; ?>assets/global/plugins/select2/select2-bootstrap.css" rel="stylesheet" type="text/css"/>
     <link href="<?php echo SITE_DIR; ?>css/backend/style.css" rel="stylesheet" type="text/css"/>
     <!-- END THEME STYLES -->
     <link rel="shortcut icon" href="favicon.ico"/>
@@ -56,6 +58,7 @@
     <script src="<?php echo SITE_DIR; ?>assets/global/plugins/jquery.cokie.min.js" type="text/javascript"></script>
     <script src="<?php echo SITE_DIR; ?>assets/global/plugins/uniform/jquery.uniform.min.js" type="text/javascript"></script>
     <script src="<?php echo SITE_DIR; ?>assets/global/plugins/bootstrap-switch/js/bootstrap-switch.min.js" type="text/javascript"></script>
+    <script src="<?php echo SITE_DIR; ?>assets/global/plugins/select2/select2.min.js" type="text/javascript"></script>
     <script src="<?php echo SITE_DIR; ?>js/jquery.nestable.js" type="text/javascript"></script>
     <!-- END CORE PLUGINS -->
     <!-- BEGIN PAGE LEVEL PLUGINS -->

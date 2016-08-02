@@ -12,9 +12,9 @@
                     </div>
                     <div class="actions">
                         <div class="btn-group btn-group-devided">
-<!--                            <button class="btn green btn-outline" name="download_btn" type="submit">-->
-<!--                                <i class="fa fa-download"></i> Download XLS-->
-<!--                            </button>-->
+                            <a href="#blacklist_modal" class="btn green btn-outline" data-toggle="modal">
+                                <i class="fa fa-plus"></i> Add To Blacklist
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -45,6 +45,50 @@
         </form>
     </div>
 </div>
+<div class="modal fade" id="blacklist_modal" role="dialog" aria-hidden="true">
+    <div class="page-loading page-loading-boxed">
+        <img src="<?php echo SITE_DIR; ?>assets/global/img/loading-spinner-grey.gif" alt="" class="loading">
+        <span> &nbsp;&nbsp;Chargement... </span>
+    </div>
+    <div class="modal-dialog">
+        <div class="row">
+            <div class="col-md-12">
+                <form method="post" id="blacklist_form" class="form-horizontal">
+                    <div class="portlet box blue">
+                        <div class="portlet-title">
+                            <div class="caption"><i class="fa fa-cogs"></i> Add to blacklist</div>
+                            <div class="actions">
+                                <button type="submit" class="btn btn-circle  btn-default btn-sm">
+                                    <i class="fa fa-plus"></i> Add
+                                </button>
+                            </div>
+                        </div>
+                        <div class="portlet-body">
+                            <div class="form-group">
+                                <label class="control-label col-md-4">User Number</label>
+                                <div class="col-md-6">
+                                    <input type="text" class="form-control" name="user_number">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-4">Virtual Number(s)</label>
+                                <div class="col-md-6">
+                                    <select class="form-control select2" name="numbers" multiple>
+                                        <?php foreach ($numbers as $number): ?>
+                                            <option value="<?php echo $number['phone']; ?>">
+                                                <?php echo $number['phone']; ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 <div class="modal fade" id="whitelist_modal">
     <div class="modal-dialog modal-sm">
         <div class="modal-content">
@@ -66,8 +110,24 @@
 <script type="text/javascript">
     $ = jQuery.noConflict();
     $(document).ready(function () {
+
+        $("body").on("submit", "#blacklist_form", function () {
+            if(validate('blacklist_form')) {
+                var params = {
+                    'action': 'blacklist',
+                    'get_from_form': 'blacklist_form',
+                    'callback': function (msg) {
+                        ajax_datatable('get_blacklist');
+                        $("#blacklist_modal").modal('hide');
+                    }
+                };
+                ajax(params);
+            }
+            return false;
+        });
         ajax_datatable('get_blacklist');
 
+        $(".select2").select2();
         $("body").on("click", ".whitelist", function () {
             var id = $(this).attr('data-id');
             $(".whitelist_btn").attr('data-id', id);

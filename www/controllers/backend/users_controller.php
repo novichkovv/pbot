@@ -91,6 +91,7 @@ class users_controller extends controller
 
     public function blacklist()
     {
+        $this->render('numbers', $this->model('virtual_numbers')->getAll());
         $this->view('users' . DS . 'blacklist');
     }
 
@@ -117,6 +118,26 @@ class users_controller extends controller
                 $this->model('blacklist')->deleteById($_POST['id']);
                 exit;
                 break;
+
+            case "blacklist":
+                $rows = [];
+                if(!$user = $this->model('users')->getByField('phone', $_POST['user_number'])) {
+                    $user = [];
+                    $user['phone'] = $_POST['user_number'];
+                    $user['create_date'] = date('Y-m-d H:i:s');
+                    $user['id'] = $this->model('users')->insert($user);
+                }
+                foreach ($_POST['numbers'] as $number) {
+                    $row = [];
+                    $row['user_id'] = $user['id'];
+                    $row['phone'] = $number;
+                    $rows[] = $row;
+                }
+                if($rows) {
+                    $this->model('blacklist')->insertRows($rows);
+                }
+
+                exit;
         }
     }
 
