@@ -154,7 +154,7 @@ class messages_model extends model
                 messages
             WHERE
                 push_date < NOW()
-                    AND push_date > NOW() - INTERVAL 20 DAY
+                    AND push_date > NOW() - INTERVAL 8 DAY
             GROUP BY user_id
         ');
         $res = [];

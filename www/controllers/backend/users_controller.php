@@ -11,7 +11,7 @@ class users_controller extends controller
     {
         $res = [];
         $stats = $this->model('messages')->getCountUserMessages();
-        for($i = time() - 20*24*3600; $i <= time(); $i += 24*3600) {
+        for($i = time() - 8*24*3600; $i <= time(); $i += 24*3600) {
             $date = date('Y-m-d', $i);
             if($stats[$date]) {
                 $res[] = '"' . date('Y,m,d', strtotime($date)) . '" : "' . $stats[$date] . '"';
