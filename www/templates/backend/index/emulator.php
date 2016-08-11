@@ -47,14 +47,19 @@
                 <div class="col-md-9">
                     <select id="user_id" class="form-control" name="user_id">
                         <?php if ($users): ?>
+                            <?php $check = false; ?>
                             <?php foreach ($users as $v): ?>
                                 <option value="<?php echo $v['id']; ?>"
                                     <?php if ($v['id'] == $_GET['user_id']): ?>
+                                        <?php $check = true; ?>
                                         selected
                                     <?php endif; ?>>
                                     <?php echo $v['phone']; ?>
                                 </option>
                             <?php endforeach; ?>
+                            <?php if ($_GET['user'] && !$check): ?>
+                                <option value="<?php echo $_GET['id']; ?>">New</option>
+                            <?php endif; ?>
                         <?php endif; ?>
                     </select>
                 </div>
