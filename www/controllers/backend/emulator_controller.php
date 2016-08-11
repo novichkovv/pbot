@@ -44,12 +44,25 @@ class emulator_controller extends controller
         }
         $this->render('number_id', $number_id);
         $users = $this->model('messages')->getNumberUsers($number_id);
-        $this->render('users', $users);
+
         if($_GET['user_id']) {
             $user = $this->model('users')->getById($_GET['user_id']);
+            if($_GET['number_id']) {
+
+                if(!$this->model('messages')->getByFields([
+                    'user_id' => $_GET['user_id'],
+                    'recipient' => $_GET['number_id']
+                ])) {
+                    $users[] = [
+                        'id' => $_GET['user_id'],
+                        'phone' => $user['phone']
+                    ];
+                }
+            }
         } else {
             $user = $users[0];
         }
+        $this->render('users', $users);
         $latest = $this->getLatest();
         $this->render('latest', $latest);
         $this->getMessages($user, $campaign, $number_id);
