@@ -157,4 +157,18 @@ class queues_model extends model
         }
         return $res;
     }
+
+    public function getCountQueuesByCampaign()
+    {
+        $stm = $this->pdo->prepare('
+            SELECT 
+                COUNT(q.id) count, c.campaign_name
+            FROM
+                queues q
+                    JOIN
+                campaigns c ON c.id = q.campaign_id
+            GROUP BY campaign_id
+        ');
+        return $this->get_all($stm);
+    }
 }

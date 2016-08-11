@@ -166,4 +166,18 @@ class messages_model extends model
         }
         return $res;
     }
+
+    public function getCountMessagesByCampaign()
+    {
+        $stm = $this->pdo->prepare('
+            SELECT 
+                COUNT(c.id) as count, campaign_id, c.campaign_name
+            FROM
+                messages m
+                    JOIN
+                campaigns c ON c.id = m.campaign_id
+            GROUP BY campaign_id
+        ');
+        return $this->get_all($stm);
+    }
 }

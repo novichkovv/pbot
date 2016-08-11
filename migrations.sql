@@ -849,4 +849,4 @@ CREATE TABLE user_switches (
   campaign_id BIGINT UNSIGNED NOT NULL,
   switch_date DATETIME NOT NULL,
   recipient VARCHAR(255) NULL
-)ENGINE=MyISAM; 
+)ENGINE=MyISAM;

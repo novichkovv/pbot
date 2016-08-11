@@ -32,6 +32,9 @@ class users_controller extends controller
         }
         $graph[] = '{' . implode(',', $res) . '}';
         $this->render('graph', $graph);
+        $this->render('messages_by_campaign', $this->model('messages')->getCountMessagesByCampaign());
+        $this->render('queues_by_campaign', $this->model('queues')->getCountQueuesByCampaign());
+        $this->render('user_switches', $this->model('user_switches')->getByField('DATE(switch_date)', date('Y-m-d'), true));
         if(isset($_POST['download_btn'])) {
             $params = $this->usersTableParams($_POST['download']);
             if(is_array($_POST['params'])) {
