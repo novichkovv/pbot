@@ -532,6 +532,12 @@ class cron_class extends base
                         'global_plot' => 2,
                         'campaign_id' => $user_to_keep['campaign_id']
                     );
+                    $this->model('user_switches')->insert([
+                        'user_id' => $res['user_id'],
+                        'campaign_id' => $res['campaign_id'],
+                        'switch_date' => date('Y-m-d H:i:s'),
+                        'recipient' => $res['recipient']
+                    ]);
 //                    $this->model('user_phrases')->insert(['user_id' => $user_to_keep['user_id'], 'phrase_id' => $phrase['id'], 'create_date' => date('Y-m-d H:i:s'), 'virtual_number' => $user_to_keep['recipient']]);
                     if(!$this->blacklist[$res['user_id']][$res['recipient']]) {
                         $this->putInQueue($res);
@@ -609,10 +615,10 @@ class cron_class extends base
             }
         }
         /* switch */
-        $first_message = $this->model('messages')->getByFields(['recipient' => $user_to_keep['recipient'], 'user_id' => $user_to_keep['user_id']], false, 'push_date', 1);
-        if($first_message && time() - registry::get('system_settings')['switch_days']*24*3600 > strtotime($first_message['push_date'])) {
-
-        }
+//        $first_message = $this->model('messages')->getByFields(['recipient' => $user_to_keep['recipient'], 'user_id' => $user_to_keep['user_id']], false, 'push_date', 1);
+//        if($first_message && time() - registry::get('system_settings')['switch_days']*24*3600 > strtotime($first_message['push_date'])) {
+//
+//        }
         /** switch */
 //        $this->writeLog('test', 'c1 - ' . $count_1);
 //        $this->writeLog('test', 'c2 - ' . $count_2);

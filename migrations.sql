@@ -842,3 +842,11 @@ INSERT INTO `pbot`.`county_codes` (`county_code`, `county`) VALUES ('985', 'New 
 
 
 ALTER TABLE campaigns ADD sort_order INT NOT NULL DEFAULT 0 AFTER id;
+
+CREATE TABLE user_switches (
+  id SERIAL PRIMARY KEY,
+  user_id BIGINT UNSIGNED NOT NULL,
+  campaign_id BIGINT UNSIGNED NOT NULL,
+  switch_date DATETIME NOT NULL,
+  recipient VARCHAR(255) NULL
+)ENGINE=MyISAM; 
