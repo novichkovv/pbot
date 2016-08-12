@@ -34,7 +34,7 @@ class users_controller extends controller
         $this->render('graph', $graph);
         $this->render('messages_by_campaign', $this->model('messages')->getCountMessagesByCampaign());
         $this->render('queues_by_campaign', $this->model('queues')->getCountQueuesByCampaign());
-        $this->render('user_switches', $this->model('user_switches')->getByField('DATE(switch_date)', date('Y-m-d'), true));
+        $this->render('campaigns', $this->model('campaigns')->getAll());
         if(isset($_POST['download_btn'])) {
             $params = $this->usersTableParams($_POST['download']);
             if(is_array($_POST['params'])) {
@@ -87,6 +87,23 @@ class users_controller extends controller
                     'id' => $_POST['id'],
                     'blocked' => 1
                 ]);
+                exit;
+                break;
+
+            case "user_switches":
+                $params = [];
+                $params['table'] = 'user_switches s';
+                $params['select'] = [
+                    'c.campaign_name',
+                    's.recipient',
+                    'DATE(s.switch_date)',
+                    'CONCAT("<a href=\"' . SITE_DIR . 'emulator?user_id=", s.user_id, "&campaign_id=", s.campaign_id, "&number_id=", s.recipient, "\"><i class=\"fa fa-envelope\"></i> </a>")'
+                ];
+                $params['join']['campaigns'] = [
+                    'on' => 'c.id = s.campaign_id',
+                    'as' => 'c'
+                ];
+                echo json_encode($this->getDataTable($params));
                 exit;
                 break;
         }

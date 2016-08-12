@@ -128,28 +128,48 @@
             <div class="portlet-title">
                 <div class="caption font-dark">
                     <i class="fa fa-graph font-dark"></i>
-                    <span class="caption-subject bold uppercase">Outbound Messages By Campaign </span>
+                    <span class="caption-subject bold uppercase">Campaign Switches</span>
                 </div>
                 <div class="actions">
                 </div>
             </div>
-            <div class="portlet-body">
-                <table class="table">
+            <div class="portlet-body custom-datatable">
+                <table class="table table-bordered" id="user_switches">
                     <thead>
+                    <tr>
+                        <th>
+                            <select class="form-control filter-field filter-select" name="c.id" data-sign="=">
+                                <option value="">All Campaigns</option>
+                                <?php foreach ($campaigns as $campaign): ?>
+                                    <option value="<?php echo $campaign['id']; ?>">
+                                        <?php echo $campaign['campaign_name']; ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </th>
+                        <th>
+                            <input type="text" class="form-control filter-field" data-sign="=" name="s.recipient">
+                        </th>
+                        <th>
+                            <input type="text" class="form-control filter-field datepicker" data-sign="=" name="DATE(s.switch_date)">
+                        </th>
+                        <th></th>
+                    </tr>
                     <tr>
                         <th>Campaign Name</th>
                         <th>Number</th>
+                        <th>Date</th>
                         <th>Link To Dialogue</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <?php foreach ($user_switches as $switch): ?>
-                        <tr>
-                            <td><?php echo $switch['campaign_id']; ?></td>
-                            <td><?php echo $switch['recipient']; ?></td>
-                            <td><a href="<?php echo SITE_DIR; ?>emulator/?campaign=<?php echo $switch['campaign_id']; ?>&user_id=<?php echo $switch['user_id']; ?>&number_id=<?php echo $switch['recipient']; ?>"><i class="fa fa-envelope"></i> </a></td>
-                        </tr>
-                    <?php endforeach; ?>
+<!--                    --><?php //foreach ($user_switches as $switch): ?>
+<!--                        <tr>-->
+<!--                            <td>--><?php //echo $switch['campaign_id']; ?><!--</td>-->
+<!--                            <td>--><?php //echo $switch['recipient']; ?><!--</td>-->
+<!--                            <td><a href="--><?php //echo SITE_DIR; ?><!--emulator/?campaign=--><?php //echo $switch['campaign_id']; ?><!--&user_id=--><?php //echo $switch['user_id']; ?><!--&number_id=--><?php //echo $switch['recipient']; ?><!--"><i class="fa fa-envelope"></i> </a></td>-->
+<!--                        </tr>-->
+<!--                    --><?php //endforeach; ?>
                     </tbody>
                 </table>
             </div>
@@ -194,6 +214,7 @@
     $ = jQuery.noConflict();
     $(document).ready(function () {
         ajax_datatable('users_table');
+        ajax_datatable('user_switches');
         var $filter_form = $("#filter-form");
         $filter_form.keydown(function(e) {
             if(e.keyCode == 13) {
