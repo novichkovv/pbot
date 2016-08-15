@@ -103,6 +103,7 @@ class users_controller extends controller
                     'on' => 'c.id = s.campaign_id',
                     'as' => 'c'
                 ];
+                $params['order'] = 's.switch_date desc';
                 echo json_encode($this->getDataTable($params));
                 exit;
                 break;
@@ -111,6 +112,7 @@ class users_controller extends controller
 
     public function blacklist()
     {
+        $this->render('users', $this->model('users')->getAll());
         $this->render('numbers', $this->model('virtual_numbers')->getAll());
         $this->view('users' . DS . 'blacklist');
     }
@@ -158,6 +160,16 @@ class users_controller extends controller
                 }
 
                 exit;
+
+            case "search_user":
+                echo json_encode($this->model('users')->findByField('phone', $_GET['q'], array('phone id', 'phone text')));
+                exit;
+                break;
+
+            case "search_number":
+                echo json_encode($this->model('virtual_numbers')->findByField('phone', $_GET['q'], array('phone id', 'phone text')));
+                exit;
+                break;
         }
     }
 

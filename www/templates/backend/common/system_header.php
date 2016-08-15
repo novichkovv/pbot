@@ -58,7 +58,7 @@
     <script src="<?php echo SITE_DIR; ?>assets/global/plugins/jquery.cokie.min.js" type="text/javascript"></script>
     <script src="<?php echo SITE_DIR; ?>assets/global/plugins/uniform/jquery.uniform.min.js" type="text/javascript"></script>
     <script src="<?php echo SITE_DIR; ?>assets/global/plugins/bootstrap-switch/js/bootstrap-switch.min.js" type="text/javascript"></script>
-    <script src="<?php echo SITE_DIR; ?>assets/global/plugins/select2/select2.min.js" type="text/javascript"></script>
+    <script src="<?php echo SITE_DIR; ?>js/select2.min.js" type="text/javascript"></script>
     <script src="<?php echo SITE_DIR; ?>js/jquery.nestable.js" type="text/javascript"></script>
     <!-- END CORE PLUGINS -->
     <!-- BEGIN PAGE LEVEL PLUGINS -->

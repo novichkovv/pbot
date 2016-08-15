@@ -23,10 +23,12 @@
                         <thead>
                         <tr>
                             <td>
-                                <input type="text" name="u.phone" data-sign="=" class="filter-field form-control" placeholder="Search">
+                                <select name="u.phone" data-sign="=" class="filter-field form-control filter-select user_search" placeholder="Search">
+                                </select>
                             </td>
                             <td>
-                                <input type="text" name="b.phone" data-sign="=" class="filter-field form-control" placeholder="Search">
+                                <select name="b.phone" data-sign="=" class="filter-field form-control filter-select number_search" placeholder="Search">
+                                </select>
                             </td>
                             <td></td>
                         </tr>
@@ -67,19 +69,22 @@
                             <div class="form-group">
                                 <label class="control-label col-md-4">User Number</label>
                                 <div class="col-md-6">
-                                    <input type="text" class="form-control" name="user_number">
+                                    <select name="user_number" class="form-control user_search">
+                                    </select>
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label class="control-label col-md-4">Virtual Number(s)</label>
                                 <div class="col-md-6">
-                                    <select class="form-control select2" name="numbers" multiple>
-                                        <?php foreach ($numbers as $number): ?>
-                                            <option value="<?php echo $number['phone']; ?>">
-                                                <?php echo $number['phone']; ?>
-                                            </option>
-                                        <?php endforeach; ?>
+                                    <select name="numbers" class="form-control user_search" multiple>
                                     </select>
+<!--                                    <select class="form-control select2" name="" multiple>-->
+<!--                                        --><?php //foreach ($numbers as $number): ?>
+<!--                                            <option value="--><?php //echo $number['phone']; ?><!--">-->
+<!--                                                --><?php //echo $number['phone']; ?>
+<!--                                            </option>-->
+<!--                                        --><?php //endforeach; ?>
+<!--                                    </select>-->
                                 </div>
                             </div>
                         </div>
@@ -110,7 +115,8 @@
 <script type="text/javascript">
     $ = jQuery.noConflict();
     $(document).ready(function () {
-
+        ajax_select2('.user_search', 'search_user');
+        ajax_select2('.number_search', 'search_number');
         $("body").on("submit", "#blacklist_form", function () {
             if(validate('blacklist_form')) {
                 var params = {
