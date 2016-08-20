@@ -181,7 +181,7 @@ class users_controller extends controller
             'u.phone repUser_Phone',
             'u.create_date repCreate_Date',
             'COUNT(m.id) repMessages_Sent',
-            'CONVERT_TZ(MAX(push_date), "GMT", "EST") repLast_Message'
+            'MAX(push_date) - INTERVAL 8 HOUR repLast_Message'
         ];
         $params['join']['messages'] = [
             'on' => 'm.user_id = u.id AND IF(m.concat, m.concat_count = 1, 1)',
