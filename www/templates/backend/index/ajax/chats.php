@@ -6,7 +6,13 @@
                 <div class="message">
                     <span class="arrow"> </span>
                     <a href="javascript:;" class="name"> <?php echo $message['incoming'] ? 'User ' . $message['phone'] : 'Bot'; ?> </a>
-                    <span class="datetime"> at <?php echo $message['time']; ?> </span>
+                    <span class="datetime"> at
+                        <?php echo $message['time']; ?> </span>
+                    <?php if (date('d', strtotime($message['date'])) != date('d')): ?>
+                        <?php echo date('d M', strtotime($message['date'])); ?>
+                    <?php else: ?>
+                        today
+                    <?php endif; ?>
                                             <span class="body">
                                                 <?php echo $message['text']; ?>
                                             </span>

@@ -11,6 +11,13 @@ class cron_class extends base
 
     public function __construct()
     {
+        if(!registry::get('system_settings')) {
+            $system_settings = [];
+            foreach ($this->model('system_settings')->getAll() as $v) {
+                $system_settings[$v['setting_key']] = $v['setting_value'];
+            }
+            registry::set('system_settings', $system_settings);
+        }
         if(!$tmp = registry::get('system_settings')['global_delay']) {
             $tmp = '20-30';
         }
@@ -456,96 +463,97 @@ class cron_class extends base
         foreach ($this->model('phrases')->getByField('status_id', 7, true) as $v) {
             $follow_up[$v['campaign_id']] = $v;
         }
-
         foreach ($to_keep as $user_to_keep) {
             $user_phrases = $this->model('phrases')->getLastUserPhrases($user_to_keep['user_id'], $user_to_keep['campaign_id'], $user_to_keep['recipient']);
-//            if($phrase = $follow_up[$user_to_keep['campaign_id']]) {
-//                if(time() - strtotime($user_to_keep['send_time']) >= $phrase['delay']) {
-//                    $campaign = $this->model('virtual_numbers')->getByField('phone', $user_to_keep['recipient'])['campaign_id'];
-//                    if(!$campaign) {
-//                        $campaign = $this->model('campaigns')->getAll()[0]['id'];
-//                    }
-//                    $check = false;
-//                    foreach ($this->model('campaigns')->getAll('sort_order') as $v) {
-//                        if($check) {
-//                            $new_campaign = $v;
-//                            break;
-//                        }
-//                        if($v['id'] == $campaign) {
-//                            $check = true;
-//                        }
-//                    }
-//                    if(!$new_campaign['id']) {
-//                        $new_campaign = $this->model('campaigns')->getAll('sort_order', 1)[0];
-//                    }
-//                    $numbers = $this->model('virtual_numbers')->getByField('campaign_id', $new_campaign['id'], true);
-//                    if($numbers) {
-//                        $new_number = $numbers[rand(0, count($numbers) - 1)]['phone'];
-//                        $user_to_keep['recipient'] = $new_number;
-//                        $user_to_keep['campaign_id'] = $new_campaign['id'];
-//                    }
-//                    $tmp = $this->model('phrases')->getPhrasesWithStatusIn([2, 8], $user_to_keep['campaign_id']);
-//                    $macro = [];
-//                    foreach ($tmp as $v) {
-//                        $macro[$v['mask']] = $v['reply'];
-//                    }
-//
-//                    $sms = strtr($phrase['reply'], $macro);
-//                    if(false !== strpos($sms, '%GEO%')) {
-//                        $state = $this->model('state_codes')->getByField('state_code', substr($user_to_keep['phone'], 1, 3))['state'];
-//                        if(!$state) {
-//                            $state = "I'm close to you";
-//                        }
-//                        $sms = str_replace('%GEO%', $state, $sms);
-//                    }
-//                    if(false !== strpos($sms, '%COUNTY%')) {
-//                        $county = $this->model('county_codes')->getByField('county_code', substr($user_to_keep['phone'], 1, 3))['county'];
-//                        if (!$county) {
-//                            $county = $this->model('state_codes')->getByField('state_code', substr($user_to_keep['phone'], 1, 3))['state'];
-//                        }
-//                        if(!$county) {
-//                            $county = "I'm close to you";
-//                        }
-//                        $sms = str_replace('%COUNTY%', $county, $sms);
-//                    }
-//                    @preg_match_all("/\{[^\}]*\}/", $sms, $matches);
-//                    if($matches[0]) {
-//                        foreach ($matches[0] as $match) {
-//                            $m = strtr($match, array('{' => '', '}' => ''));
-//                            $arr = explode('|', $m);
-//                            foreach ($arr as $k => $v) {
-//                                if(!empty($match_word) && false !== strpos($v, $match_word) && count($arr) > 1) {
-//                                    unset($arr[$k]);
-//                                }
-//                            }
-//                            $choice = $arr[array_rand($arr)];
-//                            $sms = str_replace($match, $choice, $sms);
-//                        }
-//                    }
-//                    $res = array(
-//                        'sms' => $sms,
-//                        'phone' => $user_to_keep['phone'],
-//                        'user_id' => $user_to_keep['user_id'],
-//                        'send_time' => date('Y-m-d H:i:s'),
-//                        'message_id' => 0,
-//                        'recipient' => $user_to_keep['recipient'],
-//                        'global_plot' => 2,
-//                        'campaign_id' => $user_to_keep['campaign_id']
-//                    );
-//                    $this->model('user_switches')->insert([
-//                        'user_id' => $res['user_id'],
-//                        'campaign_id' => $res['campaign_id'],
-//                        'switch_date' => date('Y-m-d H:i:s'),
-//                        'recipient' => $res['recipient']
-//                    ]);
-////                    $this->model('user_phrases')->insert(['user_id' => $user_to_keep['user_id'], 'phrase_id' => $phrase['id'], 'create_date' => date('Y-m-d H:i:s'), 'virtual_number' => $user_to_keep['recipient']]);
-//                    if(!$this->blacklist[$res['user_id']][$res['recipient']]) {
-//                        $this->putInQueue($res);
-//
-//                    }
-//                    break;
-//                }
-//            }
+            if(registry::get('system_settings')['switch_days']) { //switches
+                if($phrase = $follow_up[$user_to_keep['campaign_id']]) {
+                    if(time() - strtotime($user_to_keep['send_time']) >= $phrase['delay']) {
+                        $campaign = $this->model('virtual_numbers')->getByField('phone', $user_to_keep['recipient'])['campaign_id'];
+                        if(!$campaign) {
+                            $campaign = $this->model('campaigns')->getAll()[0]['id'];
+                        }
+                        $check = false;
+                        foreach ($this->model('campaigns')->getAll('sort_order') as $v) {
+                            if($check) {
+                                $new_campaign = $v;
+                                break;
+                            }
+                            if($v['id'] == $campaign) {
+                                $check = true;
+                            }
+                        }
+                        if(!$new_campaign['id']) {
+                            $new_campaign = $this->model('campaigns')->getAll('sort_order', 1)[0];
+                        }
+                        $numbers = $this->model('virtual_numbers')->getByField('campaign_id', $new_campaign['id'], true);
+                        if($numbers) {
+                            $new_number = $numbers[rand(0, count($numbers) - 1)]['phone'];
+                            $user_to_keep['recipient'] = $new_number;
+                            $user_to_keep['campaign_id'] = $new_campaign['id'];
+                        }
+                        $tmp = $this->model('phrases')->getPhrasesWithStatusIn([2, 8], $user_to_keep['campaign_id']);
+                        $macro = [];
+                        foreach ($tmp as $v) {
+                            $macro[$v['mask']] = $v['reply'];
+                        }
+
+                        $sms = strtr($phrase['reply'], $macro);
+                        if(false !== strpos($sms, '%GEO%')) {
+                            $state = $this->model('state_codes')->getByField('state_code', substr($user_to_keep['phone'], 1, 3))['state'];
+                            if(!$state) {
+                                $state = "I'm close to you";
+                            }
+                            $sms = str_replace('%GEO%', $state, $sms);
+                        }
+                        if(false !== strpos($sms, '%COUNTY%')) {
+                            $county = $this->model('county_codes')->getByField('county_code', substr($user_to_keep['phone'], 1, 3))['county'];
+                            if (!$county) {
+                                $county = $this->model('state_codes')->getByField('state_code', substr($user_to_keep['phone'], 1, 3))['state'];
+                            }
+                            if(!$county) {
+                                $county = "I'm close to you";
+                            }
+                            $sms = str_replace('%COUNTY%', $county, $sms);
+                        }
+                        @preg_match_all("/\{[^\}]*\}/", $sms, $matches);
+                        if($matches[0]) {
+                            foreach ($matches[0] as $match) {
+                                $m = strtr($match, array('{' => '', '}' => ''));
+                                $arr = explode('|', $m);
+                                foreach ($arr as $k => $v) {
+                                    if(!empty($match_word) && false !== strpos($v, $match_word) && count($arr) > 1) {
+                                        unset($arr[$k]);
+                                    }
+                                }
+                                $choice = $arr[array_rand($arr)];
+                                $sms = str_replace($match, $choice, $sms);
+                            }
+                        }
+                        $res = array(
+                            'sms' => $sms,
+                            'phone' => $user_to_keep['phone'],
+                            'user_id' => $user_to_keep['user_id'],
+                            'send_time' => date('Y-m-d H:i:s'),
+                            'message_id' => 0,
+                            'recipient' => $user_to_keep['recipient'],
+                            'global_plot' => 2,
+                            'campaign_id' => $user_to_keep['campaign_id']
+                        );
+                        $this->model('user_switches')->insert([
+                            'user_id' => $res['user_id'],
+                            'campaign_id' => $res['campaign_id'],
+                            'switch_date' => date('Y-m-d H:i:s'),
+                            'recipient' => $res['recipient']
+                        ]);
+//                    $this->model('user_phrases')->insert(['user_id' => $user_to_keep['user_id'], 'phrase_id' => $phrase['id'], 'create_date' => date('Y-m-d H:i:s'), 'virtual_number' => $user_to_keep['recipient']]);
+                        if(!$this->blacklist[$res['user_id']][$res['recipient']]) {
+                            $this->putInQueue($res);
+
+                        }
+                        break;
+                    }
+                }
+            }
 
 
             if(!$keeps[$user_to_keep['campaign_id']]) {

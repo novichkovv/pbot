@@ -227,7 +227,8 @@ class emulator_controller extends controller
                 'phone' => $user['phone'],
                 'text' => $mess['text'],
                 'incoming' => true,
-                'time' => date('H:i:s', $mess['time'])
+                'time' => date('H:i:s', $mess['time']),
+                'date' => date('Y-m-d', $mess['time'])
             );
         }
         foreach ($outcoming as $mess) {
@@ -257,7 +258,8 @@ class emulator_controller extends controller
             $messages[$key] = array(
                 'text' => $mess['sms'],
                 'incoming' => false,
-                'time' => date('H:i:s', strtotime($mess['send_time']))
+                'time' => date('H:i:s', strtotime($mess['send_time'])),
+                'date' => date('Y-m-d', strtotime($mess['send_time']))
             );
         }
         ksort($messages);

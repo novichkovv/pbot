@@ -69,17 +69,18 @@ class api_controller extends controller
                 }
 
             }
-            if($this->model('blacklist')->getByFields(['user_id' => $user['id'], 'phone' => $request['to']])['id']) {
+
+        }
+        if($this->model('blacklist')->getByFields(['user_id' => $user['id'], 'phone' => $request['to']])['id']) {
+            return;
+        }
+        if($this->model('messages')->checkSpam($user['id'], $request['to'])) {
+            if(!in_array($user['phone'], [111,222,333,444,555,666,777,888,999])) {
+                $this->model('blacklist')->insert([
+                    'user_id' => $user['id'],
+                    'phone' => $request['to']
+                ]);
                 return;
-            }
-            if($this->model('messages')->checkSpam($user['id'], $request['to'])) {
-                if(!in_array($user['phone'], [111,222,333,444,555,666,777,888,999])) {
-                    $this->model('blacklist')->insert([
-                        'user_id' => $user['id'],
-                        'phone' => $request['to']
-                    ]);
-                    return;
-                }
             }
         }
         $id = $this->model('virtual_numbers')->getByField('phone', $request['to'])['campaign_id'];
